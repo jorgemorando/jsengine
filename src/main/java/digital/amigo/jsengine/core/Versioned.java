@@ -52,7 +52,7 @@ public class Versioned<T> {
 	
 	public int getLatestVersion(){
 		Optional<Integer> higher = versions.keySet().stream().reduce(Integer::max);
-		return higher.isPresent()?higher.get():0;
+		return higher.orElse(0);
 	}
 	
 	public int getNextUnpublishedVersion(){
@@ -65,16 +65,16 @@ public class Versioned<T> {
 	
 	public static Optional<Integer> cleanVersionOf(String name){
 		Integer versionNum = null;
-		if(Objects.nonNull(name) && name.indexOf("_v")!=-1){
-			Optional.ofNullable(Integer.parseInt(name.split("_v")[1]));
+		if(Objects.nonNull(name) && name.contains("_v")){
+			versionNum = Integer.parseInt(name.split("_v")[1]);
 		}
 		return Optional.ofNullable(versionNum);
 	}
 	
 	public static Optional<Integer> cleanNameOf(String name){
 		Integer versionNum = null;
-		if(Objects.nonNull(name) && name.indexOf("_v")!=-1){
-			Optional.ofNullable(Integer.parseInt(name.split("_v")[0]));
+		if(Objects.nonNull(name) && name.contains("_v")){
+			versionNum = Integer.parseInt(name.split("_v")[0]);
 		}
 		return Optional.ofNullable(versionNum);
 	}
