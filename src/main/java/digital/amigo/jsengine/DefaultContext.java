@@ -19,7 +19,7 @@ public class DefaultContext extends Context {
 	private static final long serialVersionUID = -902353066044611122L;
 	
 	/* (non-Javadoc)
-	 * @see ar.com.farmalink.samm.jsengine.rule.Fact#toStringJson()
+	 * @see digital.amigo.jsengine.Fact#toStringJson()
 	 */
 	@Override
 	public String toStringJson() {
