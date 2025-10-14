@@ -31,19 +31,32 @@ class EngineCore {
 
     /*---------------------PRIVATE----------------------*/
     private void bootstrap() {
-        log.info("Inicializando motor de JavaScript");
-        engine = Context.newBuilder("js").allowAllAccess(true).build();
+        log.info("Inicializando motor de reglas");
+
+        engine = Context.newBuilder("js")
+                .allowAllAccess(true)
+                .build();
+
+        initializeContext();
 
         if (options.loadLibs()) {
-            log.debug("Cargando librería MOMENT ");
             loadLibrary("moment.min.js");
-            log.info("Inicializado exitoso");
         }
+        log.info("Inicializado exitoso");
+    }
+
+    private void initializeContext() {
+        log.info("Inicializando contexto global del motor de reglas");
+
+        Value bindings = engine.getBindings("js");
+        Value contextObject = engine.eval("js", "({})");
+        bindings.putMember("context", contextObject);
     }
 
     void loadLibrary(String libName) {
-        Instant start = Instant.now();
+        log.debug("Compilando librería " + libName);
 
+        Instant start = Instant.now();
 
         URL lib = EngineCore.class.getResource("/" + libName);
         String libStr;
@@ -61,7 +74,7 @@ class EngineCore {
 
 
     Object loadScript(String scriptName, String script) {
-        log.debug("Compilando código JavaScript de regla " + scriptName);
+        log.debug("Compilando script " + scriptName);
         try {
             var source = Source.newBuilder("js",  new StringReader(script), scriptName).build();
             return engine.eval(source);

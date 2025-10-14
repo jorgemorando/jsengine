@@ -14,8 +14,9 @@ public class EngineCoreTests {
     @Test
     public void testInstance() {
         log.debug(">> Probando Instanciación del núcleo del motor.");
-        EngineCore instance = new EngineCore(new EngineOptions(true));
-        assertNotNull(instance);
+        EngineCore engineCore = new EngineCore(new EngineOptions(false));
+        assertNotNull(engineCore);
+        assertTrue(engineCore.hasMember("context"));
     }
 
     @Test
