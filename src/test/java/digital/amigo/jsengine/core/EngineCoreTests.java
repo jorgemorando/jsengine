@@ -33,8 +33,7 @@ public class EngineCoreTests {
         log.debug(">> Probando Compilación de script nativo en el núcleo del motor.");
         EngineCore engineCore = new EngineCore(new EngineOptions(false));
         var scriptName = "EVAL_TEST";
-        engineCore.loadScript(scriptName, "var "+scriptName+" = function(ret){return ret;}");
-
+        engineCore.loadScript("var "+scriptName+" = function(ret){return ret;}");
         assertTrue(engineCore.hasMember(scriptName));
     }
 

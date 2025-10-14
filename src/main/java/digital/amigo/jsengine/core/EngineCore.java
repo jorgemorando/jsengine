@@ -3,6 +3,7 @@ package digital.amigo.jsengine.core;
 import digital.amigo.jsengine.exception.RuleEngineException;
 import org.apache.commons.io.IOUtils;
 import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.PolyglotException;
 import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.Value;
 import org.slf4j.Logger;
@@ -72,6 +73,18 @@ class EngineCore {
         log.debug("Library loaded in {} milliseconds", Duration.between(start, Instant.now()).toMillis());
     }
 
+
+    Object loadScript(String scriptCode){
+        log.debug("Compilando script " + scriptCode);
+        try {
+            var source = Source.create("js", scriptCode);
+            return engine.eval(source);
+        } catch (PolyglotException e) {
+            String msg = "Error compiling script: " + scriptCode + " )";
+            log.error(msg);
+            throw new RuleEngineException(msg, e);
+        }
+    }
 
     Object loadScript(String scriptName, String script) {
         log.debug("Compilando script " + scriptName);
