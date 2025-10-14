@@ -2,25 +2,27 @@ package digital.amigo.jsengine.core;
 
 import digital.amigo.jsengine.exception.RuleEngineException;
 import org.apache.commons.io.IOUtils;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Source;
+import org.graalvm.polyglot.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.StringReader;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Objects;
 
 class EngineCore {
 
     private final Logger log = LoggerFactory.getLogger(EngineCore.class);
 
-    private ScriptEngine engine;
+    private Context engine;
 
-    private EngineOptions options;
+    private final EngineOptions options;
 
     EngineCore(EngineOptions options) {
         this.options = options;
@@ -30,8 +32,7 @@ class EngineCore {
     /*---------------------PRIVATE----------------------*/
     private void bootstrap() {
         log.info("Inicializando motor de JavaScript");
-        ScriptEngineManager manager = new ScriptEngineManager();
-        engine = manager.getEngineByName("nashorn");
+        engine = Context.newBuilder("js").allowAllAccess(true).build();
 
         if (options.loadLibs()) {
             log.debug("Cargando librería MOMENT ");
@@ -40,27 +41,17 @@ class EngineCore {
         }
     }
 
-    Object loadScript(String scriptName, String script) {
-        log.debug("Compilando código JavaScript de regla " + scriptName);
-        try {
-			return engine.eval(script);
-		} catch (ScriptException e) {
-			String msg = "Error loading script for '" + scriptName + "' ( " + script + " )";
-			log.error(msg);
-            throw new RuleEngineException(msg, e);
-        }
-    }
-
-    private void loadLibrary(String libName) {
+    void loadLibrary(String libName) {
         Instant start = Instant.now();
-        InputStream libIS = EngineCore.class.getResourceAsStream("/" + libName);
+
+
+        URL lib = EngineCore.class.getResource("/" + libName);
         String libStr;
-        if (libIS == null) {
-            libIS = EngineCore.class.getResourceAsStream("/resources/" + libName);
+        if (Objects.isNull(lib)) {
+            lib = EngineCore.class.getResource("/resources/" + libName);
         }
         try {
-            libStr = IOUtils.toString(libIS, StandardCharsets.UTF_8);
-            libIS.close();
+            libStr = IOUtils.toString(lib, StandardCharsets.UTF_8);
             loadScript(libName, libStr);
         } catch (IOException e) {
             throw new RuleEngineException("Library (" + libName + ") not found in classpath", e);
@@ -68,4 +59,24 @@ class EngineCore {
         log.debug("Library loaded in {} milliseconds", Duration.between(start, Instant.now()).toMillis());
     }
 
+
+    Object loadScript(String scriptName, String script) {
+        log.debug("Compilando código JavaScript de regla " + scriptName);
+        try {
+            var source = Source.newBuilder("js",  new StringReader(script), scriptName).build();
+            return engine.eval(source);
+        } catch (IOException e) {
+            String msg = "Error loading script for '" + scriptName + "' ( " + script + " )";
+            log.error(msg);
+            throw new RuleEngineException(msg, e);
+        }
+    }
+
+    boolean hasMember(String memberName){
+        return engine.getBindings("js").hasMember(memberName);
+    }
+
+    Value execute(String memberName, Object ... args){
+        return engine.getBindings("js").getMember(memberName).execute(args);
+    }
 }

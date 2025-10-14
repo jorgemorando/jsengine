@@ -1,18 +1,5 @@
 package digital.amigo.jsengine.core;
 
-public class EngineOptions {
+public record EngineOptions(boolean loadLibs) {
 
-    private boolean loadLibs;
-
-     public EngineOptions(){
-        this.loadLibs = true;
-    }
-
-    public boolean loadLibs() {
-        return loadLibs;
-    }
-
-    public void loadLibs(boolean load) {
-        this.loadLibs = load;
-    }
 }
