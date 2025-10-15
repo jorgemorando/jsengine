@@ -1,21 +1,21 @@
 package digital.amigo;
 
+import digital.amigo.jsengine.DefaultFact;
+import digital.amigo.jsengine.TriggerResult;
+import digital.amigo.jsengine.control.EngineControl;
+import digital.amigo.jsengine.control.RulesControl;
+import digital.amigo.jsengine.control.TriggerControl;
+import digital.amigo.jsengine.core.EngineOptions;
+import digital.amigo.jsengine.core.RuleEngine;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static digital.amigo.util.TestUtils.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-
-import digital.amigo.jsengine.DefaultFact;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import digital.amigo.jsengine.core.RuleEngine;
-import digital.amigo.jsengine.TriggerResult;
-import digital.amigo.jsengine.control.EngineControl;
-import digital.amigo.jsengine.control.RulesControl;
-import digital.amigo.jsengine.control.TriggerControl;
 
 public class RuleEngineTests {
 
@@ -24,11 +24,7 @@ public class RuleEngineTests {
 	@Test
 	public void testInstance(){
 		log.debug(">> Probando Instanciación con librerías.");
-		EngineControl controls = RuleEngine.build().get();
-		assertNotNull(controls);
-
-		log.debug(">> Probando Instanciación sin librerías.");
-		controls = RuleEngine.build().withoutLibraries().get();
+		EngineControl controls = RuleEngine.newBuilder().build();
 		assertNotNull(controls);
 	}
 	
@@ -36,10 +32,9 @@ public class RuleEngineTests {
 	public void testRuleRegistration(){
 		log.debug(">> Probando registración de regla.");
 		
-		RulesControl rule = RuleEngine.build()
-				.withoutLibraries()
+		RulesControl rule = RuleEngine.newBuilder()
 				.withRules(CLEAN_RULE)
-				.get()
+				.build()
 				.getRulesControl();
 		
 		assertTrue(rule.isRegistered(RULE_NAME));
@@ -49,10 +44,9 @@ public class RuleEngineTests {
 	@Test
 	public void testRuleFire(){
 		log.debug(">> Probando disparo exitoso/fallido de regla.");
-		EngineControl controls = RuleEngine.build()
-				.withoutLibraries()
+		EngineControl controls = RuleEngine.newBuilder()
 				.withRules(CLEAN_RULE)
-				.get();
+				.build();
 		TriggerControl engine = controls.getTriggerControl();
 		DefaultFact fact = new DefaultFact();
 		
@@ -77,28 +71,28 @@ public class RuleEngineTests {
 	@Test
 	public void testRuleVersioning(){
 		log.debug(">> Probando versionado de regla.");
-		EngineControl controls = RuleEngine.build()
-				.withoutLibraries()
-				.get();
+		EngineControl controls = RuleEngine
+				.newBuilder()
+				.withOptions(EngineOptions.defaultOptions())
+				.build();
 		RulesControl rule = controls.getRulesControl();
 		
 		rule.register(CLEAN_RULE);
 		assertTrue(rule.isRegistered(RULE_NAME));
 		assertEquals(1,rule.list().size());
-		assertEquals(1,rule.getRuleRegistry().get(RULE_NAME).getLatestVersion());
+		assertEquals(1,rule.getRuleRegistry().get(RULE_NAME).latest());
 		
 		rule.register(CLEAN_RULE_v2);
 		assertTrue(rule.isRegistered(RULE_NAME));
 		assertEquals(1,rule.list().size());
-		assertEquals(2,rule.getRuleRegistry().get(RULE_NAME).getLatestVersion());
+		assertEquals(2,rule.getRuleRegistry().get(RULE_NAME).latest());
 	}
 	
 	@Test
 	public void testVersionedRuleFire(){
 		log.debug(">> Probando disparo versionado de regla.");
-		EngineControl controls = RuleEngine.build()
-				.withoutLibraries()
-				.get();
+		EngineControl controls = RuleEngine.newBuilder()
+				.build();
 		RulesControl rule = controls.getRulesControl();
 		TriggerControl engine = controls.getTriggerControl();
 		
@@ -174,10 +168,9 @@ public class RuleEngineTests {
 	@Test
 	public void testSpeed(){
 		log.debug(">> Probando velocidad de disparo simple.");
-		TriggerControl control = RuleEngine.build()
-				.withoutLibraries()
+		TriggerControl control = RuleEngine.newBuilder()
 				.withRules(CLEAN_RULE)
-				.get()
+				.build()
 				.getTriggerControl();
 		
 		DefaultFact fact = new DefaultFact();

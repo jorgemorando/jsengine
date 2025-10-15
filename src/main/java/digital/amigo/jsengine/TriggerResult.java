@@ -21,7 +21,7 @@ public class TriggerResult {
 	
 	private Fact fact;
 	
-	private Context context;
+	private RuleEngineContext ruleEngineContext;
 	
 	private List<String> messages = new ArrayList<String>(); 
 
@@ -36,7 +36,7 @@ public class TriggerResult {
 				.append("version", version)
 				.append("rule", rule)
 				.append("fact", fact)
-				.append("context", context)
+				.append("context", ruleEngineContext)
 				.append("message", messages)
 				.build();
 	}

@@ -1,6 +1,8 @@
 package digital.amigo.jsengine.core;
 
+import digital.amigo.jsengine.Rule;
 import digital.amigo.jsengine.exception.RuleEngineException;
+import digital.amigo.jsengine.utils.Versioned;
 import org.apache.commons.io.IOUtils;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.PolyglotException;
@@ -17,7 +19,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
 
-class EngineCore {
+final class EngineCore {
 
     private final Logger log = LoggerFactory.getLogger(EngineCore.class);
 
@@ -74,11 +76,11 @@ class EngineCore {
     }
 
 
-    Object loadScript(String scriptCode){
+    void loadAnonymousScript(String scriptCode){
         log.debug("Compilando script " + scriptCode);
         try {
             var source = Source.create("js", scriptCode);
-            return engine.eval(source);
+            engine.eval(source);
         } catch (PolyglotException e) {
             String msg = "Error compiling script: " + scriptCode + " )";
             log.error(msg);
@@ -86,11 +88,11 @@ class EngineCore {
         }
     }
 
-    Object loadScript(String scriptName, String script) {
+    void loadScript(String scriptName, String script) {
         log.debug("Compilando script " + scriptName);
         try {
             var source = Source.newBuilder("js",  new StringReader(script), scriptName).build();
-            return engine.eval(source);
+            engine.eval(source);
         } catch (IOException e) {
             String msg = "Error loading script for '" + scriptName + "' ( " + script + " )";
             log.error(msg);
@@ -98,11 +100,20 @@ class EngineCore {
         }
     }
 
-    boolean hasMember(String memberName){
+    boolean memberExists(String memberName){
         return engine.getBindings("js").hasMember(memberName);
+    }
+
+    Value getExecutableReference(String memberName){
+        return engine.getBindings("js").getMember(memberName);
     }
 
     Value execute(String memberName, Object ... args){
         return engine.getBindings("js").getMember(memberName).execute(args);
     }
+
+    EngineOptions getOptions(){
+        return options;
+    }
+
 }

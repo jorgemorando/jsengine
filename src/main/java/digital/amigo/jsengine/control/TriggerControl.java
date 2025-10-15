@@ -1,6 +1,6 @@
 package digital.amigo.jsengine.control;
 
-import digital.amigo.jsengine.Context;
+import digital.amigo.jsengine.RuleEngineContext;
 import digital.amigo.jsengine.Fact;
 import digital.amigo.jsengine.TriggerResult;
 
@@ -28,7 +28,7 @@ public interface TriggerControl {
 	 * @param fact
 	 * @return
 	 */
-	public TriggerResult trigger(String name, Fact fact, Context ctx);
+	public TriggerResult trigger(String name, Fact fact, RuleEngineContext ctx);
 	
 	/**
 	 * Dispara una versi&oacute;n espec&iacute;fica de una regla con el hecho especificado. 
@@ -37,7 +37,7 @@ public interface TriggerControl {
 	 * @param fact
 	 * @return
 	 */
-	public TriggerResult trigger(String name, int version, Fact fact, Context ctx);
+	public TriggerResult trigger(String name, int version, Fact fact, RuleEngineContext ctx);
 	
 	
 	/**

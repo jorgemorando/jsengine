@@ -14,37 +14,38 @@ public class EngineCoreTests {
     @Test
     public void testInstance() {
         log.debug(">> Probando Instanciación del núcleo del motor.");
-        EngineCore engineCore = new EngineCore(new EngineOptions(false));
+        EngineCore engineCore = new EngineCore(EngineOptions.defaultOptions());
         assertNotNull(engineCore);
-        assertTrue(engineCore.hasMember("context"));
+        assertTrue(engineCore.memberExists("context"));
     }
 
     @Test
     public void testLoadLib() {
         log.debug(">> Probando Compilación de librería en el núcleo del motor.");
-        EngineCore engineCore = new EngineCore(new EngineOptions(false));
+        var options = EngineOptions.defaultOptions();
+        EngineCore engineCore = new EngineCore(options);
         engineCore.loadLibrary("moment.min.js");
 
-        assertTrue(engineCore.hasMember("moment"));
+        assertTrue(engineCore.memberExists("moment"));
     }
 
     @Test
-    public void testLoadScript() {
+    public void testLoadAnonymousScript() {
         log.debug(">> Probando Compilación de script nativo en el núcleo del motor.");
-        EngineCore engineCore = new EngineCore(new EngineOptions(false));
+        EngineCore engineCore = new EngineCore(EngineOptions.defaultOptions());
         var scriptName = "EVAL_TEST";
-        engineCore.loadScript("var "+scriptName+" = function(ret){return ret;}");
-        assertTrue(engineCore.hasMember(scriptName));
+        engineCore.loadAnonymousScript("var "+scriptName+" = function(ret){return ret;}");
+        assertTrue(engineCore.memberExists(scriptName));
     }
 
     @Test
     public void testExecuteScript() {
         log.debug(">> Probando Ejecución de script nativo en el núcleo del motor.");
-        EngineCore engineCore = new EngineCore(new EngineOptions(false));
+        EngineCore engineCore = new EngineCore(EngineOptions.defaultOptions());
         var scriptName = "EVAL_TEST";
         engineCore.loadScript(scriptName, "var "+scriptName+" = function(ret){return ret;}");
 
-        assertTrue(engineCore.hasMember(scriptName));
+        assertTrue(engineCore.memberExists(scriptName));
         assertTrue(engineCore.execute(scriptName,true).asBoolean());
     }
 }

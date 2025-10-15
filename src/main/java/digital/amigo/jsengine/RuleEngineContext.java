@@ -11,7 +11,7 @@ import java.util.Map;
  * @author jorge.morando
  *
  */
-public abstract class Context extends HashMap<String,Object> {
+public abstract class RuleEngineContext extends HashMap<String,Object> {
 		
 	/**
 	 * 
@@ -24,18 +24,18 @@ public abstract class Context extends HashMap<String,Object> {
 	 */
 	public abstract String toStringJson();
 	
-	public static Context empty(){
-		return new DefaultContext();
+	public static RuleEngineContext empty(){
+		return new DefaultRuleEngineContext();
 	}
 	
-	public static Context clone(Context context){
-		Context ctx = empty();
-		ctx.putAll(context);
+	public static RuleEngineContext clone(RuleEngineContext ruleEngineContext){
+		RuleEngineContext ctx = empty();
+		ctx.putAll(ruleEngineContext);
 		return ctx;
 	}
 	
-	public static Context fromMap(Map<String,Object> map){
-		Context ctx = empty();
+	public static RuleEngineContext fromMap(Map<String,Object> map){
+		RuleEngineContext ctx = empty();
 		ctx.putAll(map);
 		return ctx;
 	}

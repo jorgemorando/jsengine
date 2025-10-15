@@ -1,6 +1,6 @@
 package digital.amigo.jsengine.core;
 
-import digital.amigo.jsengine.Context;
+import digital.amigo.jsengine.RuleEngineContext;
 import digital.amigo.jsengine.Fact;
 import digital.amigo.jsengine.Rule;
 import digital.amigo.jsengine.TriggerResult;
@@ -9,7 +9,7 @@ import digital.amigo.jsengine.control.RulesControl;
 import digital.amigo.jsengine.control.TriggerControl;
 import digital.amigo.jsengine.exception.RuleEngineException;
 import digital.amigo.jsengine.utils.Assertions;
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import digital.amigo.jsengine.utils.Versioned;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,7 @@ import java.util.*;
  * @author jorge.morando
  *
  */
-public class RuleEngine implements EngineControl, RulesControl, TriggerControl {
+public final class RuleEngine implements EngineControl, RulesControl, TriggerControl {
 
 	private final Logger log = LoggerFactory.getLogger(RuleEngine.class);
 	
@@ -33,31 +33,22 @@ public class RuleEngine implements EngineControl, RulesControl, TriggerControl {
 	
 	private String contextName;
 
-	public RuleEngine(String factName, String contextName){
-		log.info("Inicializando Motor de Reglas con configuración por defecto");
-		bootstrap(factName, contextName);
-	}
-
-
-	public RuleEngine(String factName, String contextName, EngineOptions options){
+	private RuleEngine(EngineOptions options){
 		log.info("Inicializando Motor de Reglas");
-		bootstrap(factName, contextName, options);
+		bootstrap(options.factName(), options.contextName(), options);
 	}
 
-	public RuleEngine(){
+	private RuleEngine(){
 		log.info("Inicializando Motor de Reglas con configuración por defecto");
-		bootstrap("fact", "context");
-	}
-
-	private void bootstrap(String factName, String contextName){
-		bootstrap(factName,contextName,new EngineOptions());
+		var options = EngineOptions.defaultOptions();
+		bootstrap(options.factName(), options.contextName(), options);
 	}
 
 	private void bootstrap(String factName, String contextName, EngineOptions options){
 		this.engine = new EngineCore(options);
 		this.factName = factName;
 		this.contextName = contextName;
-		this.ruleRegistry = new RuleRegistry(factName, contextName, this.engine);
+		this.ruleRegistry = new RuleRegistry(this.engine);
 	}
 	
 	/* (non-Javadoc)
@@ -66,15 +57,20 @@ public class RuleEngine implements EngineControl, RulesControl, TriggerControl {
 	@Override
 	public void reset() {
 		log.info("Reseteando estado de Motor de Reglas");
-		bootstrap(this.factName, this.contextName);
+		log.error("IMPLEMENT METHOD");
+		//bootstrap(this.factName, this.contextName, this.options);
 	}
 	
 	@Override
 	public void register(Rule rule) {
-		log.debug("Agregando regla "+rule.getName()+" al motor");
-		ruleRegistry.addOrUpdate(rule);
+		register(rule,0);
 	}
-	
+
+	@Override
+	public void register(List<Rule> rules) {
+		rules.forEach(this::register);
+	}
+
 	public void register(Rule rule, int version) {
 		log.debug("Agregando regla "+rule.getName()+" al motor");
 		ruleRegistry.register(rule,version);
@@ -94,7 +90,7 @@ public class RuleEngine implements EngineControl, RulesControl, TriggerControl {
 	 */
 	@Override
 	public RulesControl getRulesControl(){
-		return (RulesControl) this;
+		return this;
 	}
 	
 	/* (non-Javadoc)
@@ -102,12 +98,7 @@ public class RuleEngine implements EngineControl, RulesControl, TriggerControl {
 	 */
 	@Override
 	public TriggerControl getTriggerControl(){
-		return (TriggerControl) this;
-	}
-
-	@Override
-	public void register(List<Rule> rules) {
-		rules.forEach(rule-> register(rule));
+		return this;
 	}
 
 	/* (non-Javadoc)
@@ -146,7 +137,7 @@ public class RuleEngine implements EngineControl, RulesControl, TriggerControl {
 	 * @see digital.amigo.jsengine.TriggerControl#trigger(java.lang.String, digital.amigo.jsengine.fact.Fact,Context)
 	 */
 	@Override
-	public TriggerResult trigger(String ruleName, Fact fact, Context ctx) {
+	public TriggerResult trigger(String ruleName, Fact fact, RuleEngineContext ctx) {
 		return trigger(ruleName,0,fact,ctx);
 	}
 
@@ -154,13 +145,13 @@ public class RuleEngine implements EngineControl, RulesControl, TriggerControl {
 	 * @see digital.amigo.jsengine.TriggerControl#trigger(java.lang.String, int, digital.amigo.jsengine.fact.Fact)
 	 */
 	@Override
-	public TriggerResult trigger(String ruleName, int version, Fact fact, Context ctx) {
+	public TriggerResult trigger(String ruleName, int version, Fact fact, RuleEngineContext ctx) {
 		
 		if(Objects.isNull(ctx))
-			ctx = Context.empty();
+			ctx = RuleEngineContext.empty();
 		
 		TriggerResult result = new TriggerResult();
-		result.setContext(ctx);
+		result.setRuleEngineContext(ctx);
 		result.setFact(fact);
 
 		Assertions.assertNotNull(ruleName,"Rule name must be specified for triggering.");
@@ -168,8 +159,8 @@ public class RuleEngine implements EngineControl, RulesControl, TriggerControl {
 		try {
 			Assertions.assertTrue(ruleRegistry.has(ruleName),"Rule \""+ruleName+"\" not registered");
 			if(version == 0){
-				Versioned<Rule> vRule = ruleRegistry.get(ruleName);
-				version = vRule.getLatestVersion();
+				VersionedRule vRule = ruleRegistry.get(ruleName);
+				version = vRule.latest();
 			}else{
 				Assertions.assertTrue(ruleRegistry.has(ruleName, version),"Version \""+version+"\" of rule \""+ruleName+"\" not registered");
 			}
@@ -179,8 +170,8 @@ public class RuleEngine implements EngineControl, RulesControl, TriggerControl {
 			result.getMessages().add("Error when triggering rule \""+ruleName+"\":"+e.getMessage()+" -> "+stack);
 			return result;
 		}
-
-		ScriptObjectMirror compiled = ruleRegistry.getCompiledRules().get(Versioned.name(ruleName, version));
+		String memberName =  Versioned.name(ruleName, version);
+		var compiled = ruleRegistry.getCompiledRules().get(memberName);
 
 		log.trace("Disparando regla: '{}' version: {}",ruleName,version);
 
@@ -188,11 +179,8 @@ public class RuleEngine implements EngineControl, RulesControl, TriggerControl {
 		result.setVersion(version);
 
 		try {
-			Boolean triggerResult = (Boolean) compiled.call(null, fact, ctx);
-			if(triggerResult != null){
-				result.setFired(true);
-				result.setSuccess(triggerResult);
-			}
+			result.setSuccess(compiled.execute(fact, ctx).asBoolean());
+			result.setFired(true);
 		} catch (Exception e) {
 			log.error("Error capturado en disparo de regla {} version: {}",ruleName,version,e);
 			String stack = ExceptionUtils.getStackTrace(e);
@@ -206,46 +194,30 @@ public class RuleEngine implements EngineControl, RulesControl, TriggerControl {
 	/**
 	 * Devuelve una instancia del objeto constructor del motor de reglas
 	 * @see RuleEngine.RuleEngineBuilder
-	 * @return
+	 * @return RuleEngine.RuleEngineBuilder
 	 */
-	public static RuleEngineBuilder build(){
+	public static RuleEngineBuilder newBuilder(){
 		return new RuleEngineBuilder();
+	}
+
+	public static RuleEngineBuilder newDefaultBuilder(){
+		return new RuleEngineBuilder().withOptions(EngineOptions.defaultOptions());
 	}
 	
 	/**
 	 * Objeto constructor de instancias de control y registro de reglas del motor
 	 * @author jorge.morando
-	 *
 	 */
 	public static class RuleEngineBuilder {
 		
-		private String factName = "object";
-		
-		private String contextName = "context";
+		private EngineOptions options = EngineOptions.defaultOptions();
 
-		private EngineOptions options = new EngineOptions();
-		
-		private List<Rule> rules = new ArrayList<>(); 
+		private final List<Rule> rules = new ArrayList<>();
 		
 		private RuleEngineBuilder(){}
 		
-		public RuleEngineBuilder withFactName(String factName){
-			this.factName = factName;
-			return this;
-		}
-		
-		public RuleEngineBuilder withContextName(String contextName){
-			this.contextName = contextName;
-			return this;
-		}
-
-		public RuleEngineBuilder withLibraries(){
-			options.loadLibs(true);
-			return this;
-		}
-
-		public RuleEngineBuilder withoutLibraries(){
-			options.loadLibs(false);
+		public RuleEngineBuilder withOptions(EngineOptions options){
+			this.options = options;
 			return this;
 		}
 
@@ -254,12 +226,10 @@ public class RuleEngine implements EngineControl, RulesControl, TriggerControl {
 			return this;
 		}
 		
-		public EngineControl get(){
-			RuleEngine instance = new RuleEngine(this.factName, this.contextName,options);
-			instance.register(rules);
+		public EngineControl build(){
+			RuleEngine instance = new RuleEngine(this.options);
+			instance.register(this.rules);
 			return instance;
 		}
-		
 	}
-	
 }

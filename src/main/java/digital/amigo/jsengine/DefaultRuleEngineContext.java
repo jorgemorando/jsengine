@@ -6,7 +6,6 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import digital.amigo.jsengine.utils.JSONUtils;
 
@@ -14,7 +13,7 @@ import digital.amigo.jsengine.utils.JSONUtils;
  * @author jorge.morando
  *
  */
-public class DefaultContext extends Context {
+public class DefaultRuleEngineContext extends RuleEngineContext {
 	
 	private static final long serialVersionUID = -902353066044611122L;
 	
