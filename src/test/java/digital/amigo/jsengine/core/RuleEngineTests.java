@@ -1,12 +1,10 @@
-package digital.amigo;
+package digital.amigo.jsengine.core;
 
 import digital.amigo.jsengine.DefaultFact;
 import digital.amigo.jsengine.TriggerResult;
 import digital.amigo.jsengine.control.EngineControl;
 import digital.amigo.jsengine.control.RulesControl;
 import digital.amigo.jsengine.control.TriggerControl;
-import digital.amigo.jsengine.core.EngineOptions;
-import digital.amigo.jsengine.core.RuleEngine;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,7 +107,7 @@ public class RuleEngineTests {
 		assertNotNull(result);
 		assertTrue(result.isFired());
 		assertTrue(result.isSuccess());
-		assertEquals(v, result.getVersion());
+		assertEquals(v, result.getRule().version());
 		log.debug(">> Passed");
 
 		//fail on v1
@@ -119,7 +117,7 @@ public class RuleEngineTests {
 		assertNotNull(result);
 		assertTrue(result.isFired());
 		assertFalse(result.isSuccess());
-		assertEquals(v, result.getVersion());
+		assertEquals(v, result.getRule().version());
 		log.debug(">> Passed");
 
 		//success on v2
@@ -130,7 +128,7 @@ public class RuleEngineTests {
 		assertNotNull(result);
 		assertTrue(result.isFired());
 		assertTrue(result.isSuccess());
-		assertEquals(v, result.getVersion());
+		assertEquals(v, result.getRule().version());
 		log.debug(">> Passed");
 
 		//fail on v2
@@ -140,7 +138,7 @@ public class RuleEngineTests {
 		assertNotNull(result);
 		assertTrue(result.isFired());
 		assertFalse(result.isSuccess());
-		assertEquals(v, result.getVersion());
+		assertEquals(v, result.getRule().version());
 		log.debug(">> Passed");
 
 		//success on latest
@@ -150,7 +148,7 @@ public class RuleEngineTests {
 		assertNotNull(result);
 		assertTrue(result.isFired());
 		assertTrue(result.isSuccess());
-		assertEquals(v, result.getVersion());
+		assertEquals(v, result.getRule().version());
 		log.debug(">> Passed");
 
 		//fail on latest
@@ -160,7 +158,7 @@ public class RuleEngineTests {
 		assertNotNull(result);
 		assertTrue(result.isFired());
 		assertFalse(result.isSuccess());
-		assertEquals(v, result.getVersion());
+		assertEquals(v, result.getRule().version());
 		log.debug(">> Passed");
 	}
 	

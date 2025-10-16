@@ -1,6 +1,6 @@
 package digital.amigo.jsengine.control;
 
-import digital.amigo.jsengine.Rule;
+import digital.amigo.jsengine.core.Rule;
 import digital.amigo.jsengine.core.RuleRegistry;
 
 import java.util.Set;

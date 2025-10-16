@@ -19,7 +19,7 @@ public interface TriggerControl {
 	 * @param fact
 	 * @return
 	 */
-	public TriggerResult trigger(String name, Fact fact);
+	TriggerResult trigger(String name, Fact fact);
 	
 	/**
 	 * Dispara una regla con el hecho especficado<br>
@@ -28,7 +28,7 @@ public interface TriggerControl {
 	 * @param fact
 	 * @return
 	 */
-	public TriggerResult trigger(String name, Fact fact, RuleEngineContext ctx);
+	TriggerResult trigger(String name, Fact fact, RuleEngineContext ctx);
 	
 	/**
 	 * Dispara una versi&oacute;n espec&iacute;fica de una regla con el hecho especificado. 
@@ -37,15 +37,7 @@ public interface TriggerControl {
 	 * @param fact
 	 * @return
 	 */
-	public TriggerResult trigger(String name, int version, Fact fact, RuleEngineContext ctx);
-	
-	
-	/**
-	 * Ejecuta un plan de disparos de regla estructurado. 
-	 * @param plan
-	 * @return
-	 */
-//	public ExecutionResult execute(ExecutionPlan plan);
-	
-	
+	TriggerResult trigger(String name, int version, Fact fact, RuleEngineContext ctx);
+
+
 }

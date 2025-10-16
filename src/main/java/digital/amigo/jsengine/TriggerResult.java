@@ -1,12 +1,12 @@
 package digital.amigo.jsengine;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import digital.amigo.jsengine.core.RuleVersion;
+import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
-import lombok.Data;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class TriggerResult {
@@ -15,10 +15,8 @@ public class TriggerResult {
 	
 	private boolean fired = false;
 	
-	private Rule rule;
+	private RuleVersion rule;
 
-	private int version;
-	
 	private Fact fact;
 	
 	private RuleEngineContext ruleEngineContext;
@@ -33,7 +31,6 @@ public class TriggerResult {
 		return new ToStringBuilder(this,ToStringStyle.JSON_STYLE)
 				.append("success", success)
 				.append("fired", fired)
-				.append("version", version)
 				.append("rule", rule)
 				.append("fact", fact)
 				.append("context", ruleEngineContext)

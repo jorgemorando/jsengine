@@ -3,7 +3,7 @@
  */
 package digital.amigo.util;
 
-import digital.amigo.jsengine.Rule;
+import digital.amigo.jsengine.core.Rule;
 import digital.amigo.jsengine.RuleType;
 import digital.amigo.jsengine.core.EngineOptions;
 
