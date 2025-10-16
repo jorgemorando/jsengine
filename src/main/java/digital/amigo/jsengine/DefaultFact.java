@@ -24,7 +24,7 @@ public class DefaultFact extends HashMap<String,Object> implements Fact {
 	}
 	
 	/* (non-Javadoc)
-	 * @see ar.com.farmalink.samm.jsengine.rule.Fact#toStringJson()
+	 * @see digital.amigo.jsengine.Fact#toStringJson()
 	 */
 	@Override
 	public String toStringJson() {

@@ -1,11 +1,11 @@
 package digital.amigo.jsengine.core;
 
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class EngineCoreTests {
 
@@ -14,18 +14,38 @@ public class EngineCoreTests {
     @Test
     public void testInstance() {
         log.debug(">> Probando Instanciación del núcleo del motor.");
-        EngineCore instance = new EngineCore(new EngineOptions());
-        assertNotNull(instance);
+        EngineCore engineCore = new EngineCore(EngineOptions.defaultOptions());
+        assertNotNull(engineCore);
+        assertTrue(engineCore.memberExists(EngineCore.ENGINE_GLOBAL_CONTEXT));
     }
 
     @Test
-    public void testCompilation() {
-        log.debug(">> Probando Compilación de script en el núcleo del motor.");
-        EngineCore engineCore = new EngineCore(new EngineOptions());
+    public void testLoadLib() {
+        log.debug(">> Probando Compilación de librería en el núcleo del motor.");
+        var options = EngineOptions.defaultOptions();
+        EngineCore engineCore = new EngineCore(options);
+        engineCore.loadLibrary("moment.min.js");
 
-        ScriptObjectMirror som = (ScriptObjectMirror) engineCore.loadScript("EVAL_TEST", "function(ret){return ret;}");
-        assertNotNull(som);
-        assertTrue((Boolean) som.call(null, true));
-        assertFalse((Boolean) som.call(null, false));
+        assertTrue(engineCore.memberExists("moment"));
+    }
+
+    @Test
+    public void testLoadAnonymousScript() {
+        log.debug(">> Probando Compilación de script nativo en el núcleo del motor.");
+        EngineCore engineCore = new EngineCore(EngineOptions.defaultOptions());
+        var scriptName = "EVAL_TEST";
+        engineCore.loadAnonymousScript("var "+scriptName+" = function(ret){return ret;}");
+        assertTrue(engineCore.memberExists(scriptName));
+    }
+
+    @Test
+    public void testExecuteScript() {
+        log.debug(">> Probando Ejecución de script nativo en el núcleo del motor.");
+        EngineCore engineCore = new EngineCore(EngineOptions.defaultOptions());
+        var scriptName = "EVAL_TEST";
+        engineCore.loadScript(scriptName, "var "+scriptName+" = function(ret){return ret;}");
+
+        assertTrue(engineCore.memberExists(scriptName));
+        assertTrue(engineCore.execute(scriptName,true).asBoolean());
     }
 }

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package digital.amigo.jsengine.core;
+package digital.amigo.jsengine.utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -47,16 +47,16 @@ public class Versioned<T> {
 	}
 	
 	public T getLatest(){
-		return versions.get(getLatestVersion());
+		return versions.get(latest());
 	}
 	
-	public int getLatestVersion(){
+	public int latest(){
 		Optional<Integer> higher = versions.keySet().stream().reduce(Integer::max);
-		return higher.isPresent()?higher.get():0;
+		return higher.orElse(0);
 	}
 	
 	public int getNextUnpublishedVersion(){
-		return getLatestVersion()+1;
+		return latest()+1;
 	}
 	
 	public static String name(String name, int version){
@@ -65,16 +65,16 @@ public class Versioned<T> {
 	
 	public static Optional<Integer> cleanVersionOf(String name){
 		Integer versionNum = null;
-		if(Objects.nonNull(name) && name.indexOf("_v")!=-1){
-			Optional.ofNullable(Integer.parseInt(name.split("_v")[1]));
+		if(Objects.nonNull(name) && name.contains("_v")){
+			versionNum = Integer.parseInt(name.split("_v")[1]);
 		}
 		return Optional.ofNullable(versionNum);
 	}
 	
 	public static Optional<Integer> cleanNameOf(String name){
 		Integer versionNum = null;
-		if(Objects.nonNull(name) && name.indexOf("_v")!=-1){
-			Optional.ofNullable(Integer.parseInt(name.split("_v")[0]));
+		if(Objects.nonNull(name) && name.contains("_v")){
+			versionNum = Integer.parseInt(name.split("_v")[0]);
 		}
 		return Optional.ofNullable(versionNum);
 	}
