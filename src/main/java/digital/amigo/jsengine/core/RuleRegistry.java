@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static digital.amigo.jsengine.utils.Assertions.assertFalse;
 import static digital.amigo.jsengine.utils.Assertions.assertNotNull;
@@ -40,14 +42,14 @@ import static digital.amigo.jsengine.utils.Assertions.assertTrue;
         compiledRules = new HashMap<>();
     }
 
-    public Map<String, VersionedRule> listRules() {
+    Map<String, VersionedRule> listRules() {
         if (Objects.isNull(rules))
             rules = new HashMap<>();
 
         return this.rules;
     }
 
-    public void reset() {
+    void reset() {
         log.debug("Reseteando RuleRegistry");
         bootstrap();
     }
@@ -130,7 +132,7 @@ import static digital.amigo.jsengine.utils.Assertions.assertTrue;
      * @throws RuleEngineException Si el nombre es nulo.
      * @see RuleRegistry#register(Rule, int)
      */
-    public VersionedRule getVersionsOf(String ruleName) {
+    VersionedRule getVersionsOf(String ruleName) {
         assertNotNull(ruleName, "Must specify Rule name");
         return rules.get(ruleName);
     }
@@ -149,6 +151,13 @@ import static digital.amigo.jsengine.utils.Assertions.assertTrue;
         VersionedRule vRule = rules.get(ruleName);
         assertNotNull(vRule, "Version not registered");
         return vRule.get(version);
+    }
+
+    /**
+     * @return the compiledRules
+     */
+    public Set<RuleVersion> getRules() {
+        return rules.values().stream().map(VersionedRule::getLatest).collect(Collectors.toUnmodifiableSet());
     }
 
     /**

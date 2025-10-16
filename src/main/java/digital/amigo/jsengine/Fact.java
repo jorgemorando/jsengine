@@ -11,10 +11,10 @@ import java.io.Serializable;
  *
  */
 public interface Fact extends Serializable {
-		
+
 	/**
 	 * Devuelve una representaci&oacute;n alfanumérica del objeto en formato JSON
-	 * @return
+	 * @return String json representation of the object
 	 */
 	String toStringJson();
 	
