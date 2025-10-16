@@ -9,19 +9,19 @@ public interface EngineControl {
 
 	/**
 	 * Devuelve el control de disparo de regla del motor
-	 * @return
+	 * @return RuleEvaluationControl
 	 */
-	public TriggerControl getTriggerControl();
+	RuleEvaluationControl getTriggerControl();
 	
 	/**
 	 * Devuelve el control de gesti&oacute;n de reglas del motor
-	 * @return
+	 * @return RulesControl
 	 */
-	public RulesControl getRulesControl();
+	RulesControl getRulesControl();
 	
 	/**
 	 * Devuelve el motor al estado original.
 	 */
-	public void reset();
+	void reset();
 	
 }

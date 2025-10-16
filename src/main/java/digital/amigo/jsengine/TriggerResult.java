@@ -15,7 +15,7 @@ public class TriggerResult {
 	
 	private boolean fired = false;
 	
-	private RuleVersion rule;
+	private RuleVersion ruleVersion;
 
 	private Fact fact;
 	
@@ -31,7 +31,7 @@ public class TriggerResult {
 		return new ToStringBuilder(this,ToStringStyle.JSON_STYLE)
 				.append("success", success)
 				.append("fired", fired)
-				.append("rule", rule)
+				.append("rule", ruleVersion)
 				.append("fact", fact)
 				.append("context", ruleEngineContext)
 				.append("message", messages)

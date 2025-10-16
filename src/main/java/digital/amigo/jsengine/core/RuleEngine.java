@@ -1,11 +1,12 @@
 package digital.amigo.jsengine.core;
 
+import digital.amigo.jsengine.MultiTriggerResult;
 import digital.amigo.jsengine.RuleEngineContext;
 import digital.amigo.jsengine.Fact;
 import digital.amigo.jsengine.TriggerResult;
 import digital.amigo.jsengine.control.EngineControl;
 import digital.amigo.jsengine.control.RulesControl;
-import digital.amigo.jsengine.control.TriggerControl;
+import digital.amigo.jsengine.control.RuleEvaluationControl;
 import digital.amigo.jsengine.exception.RuleEngineException;
 import digital.amigo.jsengine.utils.Assertions;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -21,7 +22,7 @@ import static digital.amigo.jsengine.utils.Assertions.assertTrue;
  * @author jorge.morando
  *
  */
-final class RuleEngine implements EngineControl, RulesControl, TriggerControl {
+final class RuleEngine implements EngineControl, RulesControl, RuleEvaluationControl {
 
 	private final Logger log = LoggerFactory.getLogger(RuleEngine.class);
 	
@@ -87,7 +88,7 @@ final class RuleEngine implements EngineControl, RulesControl, TriggerControl {
 	 * @see digital.amigo.jsengine.EngineControl#getTriggerControl()
 	 */
 	@Override
-	public TriggerControl getTriggerControl(){
+	public RuleEvaluationControl getTriggerControl(){
 		return this;
 	}
 
@@ -114,28 +115,42 @@ final class RuleEngine implements EngineControl, RulesControl, TriggerControl {
 	public RuleRegistry getRuleRegistry() {
 		return ruleRegistry;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see digital.amigo.jsengine.TriggerControl#trigger(java.lang.String, digital.amigo.jsengine.fact.Fact)
 	 */
 	@Override
-	public TriggerResult trigger(String ruleName, Fact fact) {
-		return trigger(ruleName,0,fact,null);
+	public MultiTriggerResult evaluateRulesFor(Fact fact, RuleEngineContext ctx) {
+
+		List<TriggerResult> results = ruleRegistry.getRules().stream()
+				.map(rule -> evaluate(rule.rule().getName(),0,fact,ctx))
+				.toList();
+
+		MultiTriggerResult r =  new MultiTriggerResult(fact, ctx, results);
+		return r;
+	}
+
+	/* (non-Javadoc)
+	 * @see digital.amigo.jsengine.TriggerControl#trigger(java.lang.String, digital.amigo.jsengine.fact.Fact)
+	 */
+	@Override
+	public TriggerResult evaluate(String ruleName, Fact fact) {
+		return evaluate(ruleName,0,fact,null);
 	}
 	
 	/* (non-Javadoc)
 	 * @see digital.amigo.jsengine.TriggerControl#trigger(java.lang.String, digital.amigo.jsengine.fact.Fact,Context)
 	 */
 	@Override
-	public TriggerResult trigger(String ruleName, Fact fact, RuleEngineContext ctx) {
-		return trigger(ruleName,0,fact,ctx);
+	public TriggerResult evaluate(String ruleName, Fact fact, RuleEngineContext ctx) {
+		return evaluate(ruleName,0,fact,ctx);
 	}
 
 	/* (non-Javadoc)
 	 * @see digital.amigo.jsengine.TriggerControl#trigger(java.lang.String, int, digital.amigo.jsengine.fact.Fact)
 	 */
 	@Override
-	public TriggerResult trigger(String ruleName, int version, Fact fact, RuleEngineContext ctx) {
+	public TriggerResult evaluate(String ruleName, int version, Fact fact, RuleEngineContext ctx) {
 		
 		if(Objects.isNull(ctx))
 			ctx = RuleEngineContext.empty();
@@ -167,7 +182,7 @@ final class RuleEngine implements EngineControl, RulesControl, TriggerControl {
 
 		log.trace("Disparando regla: '{}' version: {}",ruleName,version);
 
-		result.setRule(ruleRegistry.get(ruleName, version));
+		result.setRuleVersion(ruleRegistry.get(ruleName, version));
 
 		try {
 			result.setSuccess(compiled.execute(fact, ctx));

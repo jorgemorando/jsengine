@@ -1,6 +1,7 @@
 package digital.amigo.jsengine.control;
 
 import digital.amigo.jsengine.Fact;
+import digital.amigo.jsengine.MultiTriggerResult;
 import digital.amigo.jsengine.RuleEngineContext;
 import digital.amigo.jsengine.TriggerResult;
 
@@ -9,8 +10,15 @@ import digital.amigo.jsengine.TriggerResult;
  * @author jorge.morando
  *
  */
-public interface TriggerControl {
-	
+public interface RuleEvaluationControl {
+
+	/**
+	 * Dispara todas las reglas para el tipo de {@link Fact} suministrado <br>
+	 * Se disparan solo las &uacute;ltimas versiones de las reglas
+	 * @param fact Fact
+	 * @return {@link TriggerResult }
+	 */
+	MultiTriggerResult evaluateRulesFor(Fact fact, RuleEngineContext context);
 	
 	/**
 	 * Dispara una regla con el hecho especficado<br>
@@ -19,7 +27,7 @@ public interface TriggerControl {
 	 * @param fact Fact
 	 * @return {@link TriggerResult }
 	 */
-	TriggerResult trigger(String name, Fact fact);
+	TriggerResult evaluate(String name, Fact fact);
 	
 	/**
 	 * Dispara una regla con el hecho especficado<br>
@@ -29,7 +37,7 @@ public interface TriggerControl {
 	 * @param ctx {@link RuleEngineContext }
 	 * @return {@link TriggerResult }
 	 */
-	TriggerResult trigger(String name, Fact fact, RuleEngineContext ctx);
+	TriggerResult evaluate(String name, Fact fact, RuleEngineContext ctx);
 	
 	/**
 	 * Dispara una versi&oacute;n espec&iacute;fica de una regla con el hecho especificado. 
@@ -38,7 +46,7 @@ public interface TriggerControl {
 	 * @param fact {@link Fact }
 	 * @return {@link TriggerResult }
 	 */
-	TriggerResult trigger(String name, int version, Fact fact, RuleEngineContext ctx);
+	TriggerResult evaluate(String name, int version, Fact fact, RuleEngineContext ctx);
 
 
 }
