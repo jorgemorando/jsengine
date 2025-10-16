@@ -1,13 +1,12 @@
 package digital.amigo.jsengine.core;
 
-import digital.amigo.jsengine.Rule;
 import digital.amigo.jsengine.exception.RuleEngineException;
-import digital.amigo.jsengine.utils.Versioned;
 import org.apache.commons.io.IOUtils;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.PolyglotException;
 import org.graalvm.polyglot.Source;
 import org.graalvm.polyglot.Value;
+import org.graalvm.polyglot.proxy.ProxyObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +16,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Objects;
 
 final class EngineCore {
@@ -24,6 +24,8 @@ final class EngineCore {
     private final Logger log = LoggerFactory.getLogger(EngineCore.class);
 
     private Context engine;
+
+    public static String ENGINE_GLOBAL_CONTEXT = "globals";
 
     private final EngineOptions options;
 
@@ -52,8 +54,8 @@ final class EngineCore {
         log.info("Inicializando contexto global del motor de reglas");
 
         Value bindings = engine.getBindings("js");
-        Value contextObject = engine.eval("js", "({})");
-        bindings.putMember("context", contextObject);
+        ProxyObject contextObject = ProxyObject.fromMap(new HashMap<>());
+        bindings.putMember(ENGINE_GLOBAL_CONTEXT, contextObject);
     }
 
     void loadLibrary(String libName) {

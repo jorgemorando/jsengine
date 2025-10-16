@@ -2,53 +2,44 @@ package digital.amigo.jsengine.core;
 
 import digital.amigo.jsengine.RuleEngineContext;
 import digital.amigo.jsengine.Fact;
-import digital.amigo.jsengine.Rule;
 import digital.amigo.jsengine.TriggerResult;
 import digital.amigo.jsengine.control.EngineControl;
 import digital.amigo.jsengine.control.RulesControl;
 import digital.amigo.jsengine.control.TriggerControl;
 import digital.amigo.jsengine.exception.RuleEngineException;
 import digital.amigo.jsengine.utils.Assertions;
-import digital.amigo.jsengine.utils.Versioned;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
+import static digital.amigo.jsengine.utils.Assertions.assertTrue;
+
 /**
  * Motor de Reglas JavaScript 
  * @author jorge.morando
  *
  */
-public final class RuleEngine implements EngineControl, RulesControl, TriggerControl {
+final class RuleEngine implements EngineControl, RulesControl, TriggerControl {
 
 	private final Logger log = LoggerFactory.getLogger(RuleEngine.class);
 	
-	private EngineCore engine;
+	//private EngineCore engine;
 	
 	private RuleRegistry ruleRegistry;
-	
-	private String factName;
-	
-	private String contextName;
+
+	private final EngineOptions options;
 
 	private RuleEngine(EngineOptions options){
 		log.info("Inicializando Motor de Reglas");
-		bootstrap(options.factName(), options.contextName(), options);
+		this.options = options;
+		bootstrap(options);
 	}
 
-	private RuleEngine(){
-		log.info("Inicializando Motor de Reglas con configuración por defecto");
-		var options = EngineOptions.defaultOptions();
-		bootstrap(options.factName(), options.contextName(), options);
-	}
-
-	private void bootstrap(String factName, String contextName, EngineOptions options){
-		this.engine = new EngineCore(options);
-		this.factName = factName;
-		this.contextName = contextName;
-		this.ruleRegistry = new RuleRegistry(this.engine);
+	private void bootstrap(EngineOptions options){
+//		this.engine =
+		this.ruleRegistry = new RuleRegistry(new EngineCore(options));
 	}
 	
 	/* (non-Javadoc)
@@ -57,8 +48,7 @@ public final class RuleEngine implements EngineControl, RulesControl, TriggerCon
 	@Override
 	public void reset() {
 		log.info("Reseteando estado de Motor de Reglas");
-		log.error("IMPLEMENT METHOD");
-		//bootstrap(this.factName, this.contextName, this.options);
+		bootstrap(this.options);
 	}
 	
 	@Override
@@ -157,12 +147,13 @@ public final class RuleEngine implements EngineControl, RulesControl, TriggerCon
 		Assertions.assertNotNull(ruleName,"Rule name must be specified for triggering.");
 		
 		try {
-			Assertions.assertTrue(ruleRegistry.has(ruleName),"Rule \""+ruleName+"\" not registered");
-			if(version == 0){
-				VersionedRule vRule = ruleRegistry.get(ruleName);
+			assertTrue(ruleRegistry.has(ruleName),"Rule \""+ruleName+"\" not registered");
+			if(version == 0){//0 == latest
+				VersionedRule vRule = ruleRegistry.getVersionsOf(ruleName);
 				version = vRule.latest();
+				assertTrue(version>0,"Rule \""+ruleName+"\" not registered");
 			}else{
-				Assertions.assertTrue(ruleRegistry.has(ruleName, version),"Version \""+version+"\" of rule \""+ruleName+"\" not registered");
+				assertTrue(ruleRegistry.has(ruleName, version),"Version \""+version+"\" of rule \""+ruleName+"\" not registered");
 			}
 		} catch (RuleEngineException e) {
 			String stack = ExceptionUtils.getStackTrace(e);
@@ -170,16 +161,16 @@ public final class RuleEngine implements EngineControl, RulesControl, TriggerCon
 			result.getMessages().add("Error when triggering rule \""+ruleName+"\":"+e.getMessage()+" -> "+stack);
 			return result;
 		}
-		String memberName =  Versioned.name(ruleName, version);
-		var compiled = ruleRegistry.getCompiledRules().get(memberName);
+
+		RuleVersion ruleVersion = ruleRegistry.get(ruleName,version);
+		CompiledRule compiled = ruleRegistry.getCompiledRules().get(ruleVersion.versionName());
 
 		log.trace("Disparando regla: '{}' version: {}",ruleName,version);
 
 		result.setRule(ruleRegistry.get(ruleName, version));
-		result.setVersion(version);
 
 		try {
-			result.setSuccess(compiled.execute(fact, ctx).asBoolean());
+			result.setSuccess(compiled.execute(fact, ctx));
 			result.setFired(true);
 		} catch (Exception e) {
 			log.error("Error capturado en disparo de regla {} version: {}",ruleName,version,e);

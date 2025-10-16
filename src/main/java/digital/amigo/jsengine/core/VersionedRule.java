@@ -3,7 +3,6 @@
  */
 package digital.amigo.jsengine.core;
 
-import digital.amigo.jsengine.Rule;
 import lombok.Getter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -18,7 +17,7 @@ import java.util.Optional;
  * @author jorge.morando
  *
  */
-public class VersionedRule {
+class VersionedRule {
 
 	@Getter
 	private Map<Integer, Rule> versions = new HashMap<>();
@@ -31,8 +30,9 @@ public class VersionedRule {
 		getVersions().put(getNextUnpublishedVersion(),object);
 	}
 	
-	public Rule get(int version){
-		return versions.get(version);
+	public RuleVersion get(int version){
+		var rule = versions.get(version);
+		return new RuleVersion(rule, version);
 	}
 	
 	public void add(Rule version){
@@ -46,8 +46,8 @@ public class VersionedRule {
 		versions.put(versionNum,version);
 	}
 	
-	public Rule getLatest(){
-		return versions.get(latest());
+	public RuleVersion getLatest(){
+		return get(latest());
 	}
 	
 	public int latest(){
@@ -59,15 +59,11 @@ public class VersionedRule {
 		return latest()+1;
 	}
 	
-	public static String name(String name, int version){
-		return name+"_v"+version;
-	}
-	
-	public static  VersionedRule of(Rule object){
+	static  VersionedRule of(Rule object){
 		return new VersionedRule(object);
 	}
 
-	public static  VersionedRule of(Rule object, Integer version){
+	static  VersionedRule of(Rule object, Integer version){
 		return new VersionedRule(version,object);
 	}
 

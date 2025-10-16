@@ -3,7 +3,7 @@
  */
 package digital.amigo.util;
 
-import digital.amigo.jsengine.Rule;
+import digital.amigo.jsengine.core.Rule;
 import digital.amigo.jsengine.RuleType;
 import digital.amigo.jsengine.core.EngineOptions;
 
@@ -30,11 +30,9 @@ public class TestUtils {
 	public static final Rule CLEAN_RULE_v2 = getCleanRuleV2();
 	
 	private static Rule getCleanRule(){
-		Rule rule = new Rule(RULE_NAME,RULE_CLEAN_CODE, RuleType.DECISION);
-		return rule;
+        return new Rule(RULE_NAME,RULE_CLEAN_CODE, RuleType.DECISION);
 	}
 	private static Rule getCleanRuleV2(){
-		Rule rule = new Rule(RULE_NAME,RULE_CLEAN_CODE2, RuleType.DECISION);
-		return rule;
+        return new Rule(RULE_NAME,RULE_CLEAN_CODE2, RuleType.DECISION);
 	}
 }
