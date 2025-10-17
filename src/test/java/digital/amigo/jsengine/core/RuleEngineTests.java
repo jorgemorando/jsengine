@@ -70,7 +70,7 @@ public class RuleEngineTests {
 		RuleEvaluationControl engine = controls.getTriggerControl();
 		DefaultFact fact = new DefaultFact();
 
-		fact.put("name", "decision");//success
+		fact.put("name", RULE_1_VALUE);//success
 		TriggerResult result = engine.evaluate(RULE_NAME, fact, null);
 		assertNotNull(result);
 		assertTrue(result.isEvaluated());
@@ -126,10 +126,10 @@ public class RuleEngineTests {
 		DefaultFact fact = new DefaultFact();
 		DefaultRuleEngineContext ctx = new DefaultRuleEngineContext();
 
-		fact.put("name", "decision");//success on Rule 1 and fail on Rule 2
+		fact.put("name", RULE_1_VALUE);//success on Rule 1 and fail on Rule 2
 		MultiTriggerResult results = engine.evaluateRulesFor(fact,ctx);
 		assertNotNull(results);
-        assertEquals("Should fire 2 rules instead of " + results.getResultCount(), 2, results.getResultCount());
+        assertEquals("Should evaluate 2 rules instead of " + results.getResultCount(), 2, results.getResultCount());
 		var successful = results.getSuccessful();
 		var failed = results.getFailed();
 		assertTrue("Should have 1 success and 1 failure",successful.size()==1 && failed.size()==1);
@@ -141,10 +141,10 @@ public class RuleEngineTests {
 		fact = new DefaultFact();
 		ctx = new DefaultRuleEngineContext();
 
-		fact.put("name", "decision2");//success on Rule 2 and fail on Rule 1
+		fact.put("name", RULE_2_VALUE);//success on Rule 2 and fail on Rule 1
 		MultiTriggerResult results2 = engine.evaluateRulesFor(fact, ctx);
 		assertNotNull(results2);
-		assertEquals("Should fire 2 rules instead of " + results2.getResultCount(), 2, results.getResultCount());
+		assertEquals("Should evaluate 2 rules instead of " + results2.getResultCount(), 2, results.getResultCount());
 
 		successful = results2.getSuccessful();
 		failed = results2.getFailed();
@@ -258,12 +258,12 @@ public class RuleEngineTests {
 	public void testSpeed(){
 		log.debug(">> Probando velocidad de disparo simple.");
 		RuleEvaluationControl control = RuleEngine.newBuilder()
-				.withRules(CLEAN_RULE)
+				.withRules(CLEAN_RULE,CLEAN_RULE2)
 				.build()
 				.getTriggerControl();
 		
 		DefaultFact fact = new DefaultFact();
-		fact.put("name", "decision");//success
+		fact.put("name", RULE_1_VALUE);//success
 		
 		long start = System.currentTimeMillis();
 		int fires = 1000;

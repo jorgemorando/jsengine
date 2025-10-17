@@ -218,7 +218,6 @@ import static digital.amigo.jsengine.utils.Assertions.assertTrue;
                 if (%5$s) {
                     %4$s.%2$s = %6$s;
                 }
-                print(fact);
                 return ( %4$s.%2$s == undefined || %4$s.%2$s == null? false : %4$s.%2$s);
             }
             """,
