@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import digital.amigo.jsengine.core.Fact;
 import digital.amigo.jsengine.exception.RuleEngineException;
 import digital.amigo.jsengine.utils.JSONUtils;
 
@@ -24,7 +25,7 @@ public class DefaultFact extends HashMap<String,Object> implements Fact {
 	}
 	
 	/* (non-Javadoc)
-	 * @see digital.amigo.jsengine.Fact#toStringJson()
+	 * @see digital.amigo.jsengine.core.Fact#toStringJson()
 	 */
 	@Override
 	public String toStringJson() {

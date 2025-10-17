@@ -4,7 +4,6 @@
 package digital.amigo.jsengine.core;
 
 
-import digital.amigo.jsengine.RuleType;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;

@@ -1,8 +1,6 @@
 package digital.amigo.jsengine.core;
 
 import digital.amigo.jsengine.MultiTriggerResult;
-import digital.amigo.jsengine.RuleEngineContext;
-import digital.amigo.jsengine.Fact;
 import digital.amigo.jsengine.TriggerResult;
 import digital.amigo.jsengine.control.EngineControl;
 import digital.amigo.jsengine.control.RulesControl;

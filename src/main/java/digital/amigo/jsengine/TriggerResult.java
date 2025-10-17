@@ -1,5 +1,7 @@
 package digital.amigo.jsengine;
 
+import digital.amigo.jsengine.core.Fact;
+import digital.amigo.jsengine.core.RuleEngineContext;
 import digital.amigo.jsengine.core.RuleVersion;
 import lombok.Data;
 import org.apache.commons.lang3.builder.ToStringBuilder;

@@ -1,8 +1,9 @@
 /**
  * 
  */
-package digital.amigo.jsengine;
+package digital.amigo.jsengine.core;
 
+import digital.amigo.jsengine.DefaultRuleEngineContext;
 import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.proxy.ProxyArray;
 import org.graalvm.polyglot.proxy.ProxyObject;

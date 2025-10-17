@@ -1,5 +1,7 @@
 package digital.amigo.jsengine;
 
+import digital.amigo.jsengine.core.Fact;
+import digital.amigo.jsengine.core.RuleEngineContext;
 import lombok.Getter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -16,7 +18,7 @@ public final class MultiTriggerResult {
     @Getter
     private final RuleEngineContext context;
 
-    public MultiTriggerResult(Fact fact, RuleEngineContext context,List<TriggerResult> results) {
+    public MultiTriggerResult(Fact fact, RuleEngineContext context, List<TriggerResult> results) {
         this.results = results;
         this.fact = fact;
         this.context = context;

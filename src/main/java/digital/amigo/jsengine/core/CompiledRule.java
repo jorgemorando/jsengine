@@ -1,7 +1,5 @@
 package digital.amigo.jsengine.core;
 
-import digital.amigo.jsengine.Fact;
-import digital.amigo.jsengine.RuleEngineContext;
 import lombok.Getter;
 import org.graalvm.polyglot.Value;
 

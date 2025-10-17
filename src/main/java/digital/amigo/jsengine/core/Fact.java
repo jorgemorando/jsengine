@@ -1,7 +1,7 @@
 /**
  * 
  */
-package digital.amigo.jsengine;
+package digital.amigo.jsengine.core;
 
 import java.io.Serializable;
 
