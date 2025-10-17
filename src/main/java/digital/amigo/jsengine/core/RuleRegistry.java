@@ -1,7 +1,10 @@
 package digital.amigo.jsengine.core;
 
 import digital.amigo.jsengine.exception.RuleEngineException;
+import digital.amigo.jsengine.rule.Condition;
+import digital.amigo.jsengine.rule.Rule;
 import digital.amigo.jsengine.utils.Versioned;
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,7 +101,7 @@ import static digital.amigo.jsengine.utils.Assertions.assertTrue;
         versionedRuleName = ruleVersion.versionName();
         log.debug(versionedRuleName);
 
-        code = completeRuleCode(ruleVersion);
+        code = render(ruleVersion);
         log.debug(code);
         engine.loadScript(versionedRuleName, code);
 
@@ -203,28 +206,27 @@ import static digital.amigo.jsengine.utils.Assertions.assertTrue;
     }
 
     /*----------------------------- PRIVATE -------------------------------*/
-    private String completeRuleCode(RuleVersion ruleVersion) {
+    public String render(RuleVersion rule) {
         var factName = engine.getOptions().factName();
         var contextName = engine.getOptions().contextName();
-        var ruleName = ruleVersion.rule().getName();
-        var memberName = ruleVersion.versionName();
-
-        StringBuilder f = new StringBuilder();
-
-        f.append("function");
-        f.append(" ");
-        f.append(memberName);
-        f.append("(" + factName + ", " + contextName + "){\n");
-        //f.append(factName+"=JSON.parse("+factName+");\n");//si es un objeto java debería parsearse, pero tarda mucho tiempo
-        f.append(ruleVersion.rule().getRawCode().trim());
-        if (!ruleVersion.rule().getRawCode().endsWith(";")) {
-            f.append(";");
-        }
-        f.append("\n");
-        f.append("return (" + contextName + "." + ruleName + "==undefined  || " + contextName + "." + ruleName + "==null ? false:" + contextName + "." + ruleName + ");\n");
-        f.append("};\n");
-
-        return f.toString();
+        Condition condition = rule.rule().getCondition();
+        var ruleName = rule.rule().getName();
+        var memberName = rule.versionName();
+        var result =  rule.rule().getResult();
+        return String.format("""
+            function %1$s(%3$s, %4$s) {
+                if (%5$s) {
+                    %4$s.%2$s = %6$s;
+                }
+                print(fact);
+                return ( %4$s.%2$s == undefined || %4$s.%2$s == null? false : %4$s.%2$s);
+            }
+            """,
+                memberName, ruleName,
+                factName, contextName,
+                condition.toJavaScript(),
+                StringEscapeUtils.escapeJson(result)
+        );
     }
 
 

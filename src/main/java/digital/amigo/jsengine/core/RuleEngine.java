@@ -6,6 +6,7 @@ import digital.amigo.jsengine.control.EngineControl;
 import digital.amigo.jsengine.control.RulesControl;
 import digital.amigo.jsengine.control.RuleEvaluationControl;
 import digital.amigo.jsengine.exception.RuleEngineException;
+import digital.amigo.jsengine.rule.Rule;
 import digital.amigo.jsengine.utils.Assertions;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
@@ -178,17 +179,18 @@ final class RuleEngine implements EngineControl, RulesControl, RuleEvaluationCon
 		RuleVersion ruleVersion = ruleRegistry.get(ruleName,version);
 		CompiledRule compiled = ruleRegistry.getCompiledRules().get(ruleVersion.versionName());
 
+		log.trace("Fact: '{}' \n Context: {}",fact,ctx);
 		log.trace("Disparando regla: '{}' version: {}",ruleName,version);
 
 		result.setRuleVersion(ruleRegistry.get(ruleName, version));
 
 		try {
-			result.setSuccess(compiled.execute(fact, ctx));
-			result.setFired(true);
+			result.setTriggered(compiled.execute(fact, ctx));
+			result.setEvaluated(true);
 		} catch (Exception e) {
 			log.error("Error capturado en disparo de regla {} version: {}",ruleName,version,e);
 			String stack = ExceptionUtils.getStackTrace(e);
-			result.setSuccess(false);
+			result.setTriggered(false);
 			result.getMessages().add("Error when triggering rule \""+ruleName+"\" -> "+stack);
 		}
 		return result;

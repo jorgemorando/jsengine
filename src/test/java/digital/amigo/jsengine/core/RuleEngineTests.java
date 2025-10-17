@@ -57,7 +57,7 @@ public class RuleEngineTests {
 		var results = rules.evaluateRulesFor(fact,ctx);
 
 		assertNotNull("Should have a context",results.getContext());
-		assertEquals("Should have 2 context entrances",2, results.getContext().keySet().size());
+		assertEquals("Should have 1 context entrance",1, results.getContext().keySet().size());
 		log.debug("Trigger Result object {}",results);
 	}
 	
@@ -73,16 +73,45 @@ public class RuleEngineTests {
 		fact.put("name", "decision");//success
 		TriggerResult result = engine.evaluate(RULE_NAME, fact, null);
 		assertNotNull(result);
-		assertTrue(result.isFired());
-		assertTrue(result.isSuccess());
+		assertTrue(result.isEvaluated());
+		assertTrue(result.isTriggered());
 		log.debug("Trigger Result object {}",result);
 		log.debug(">> disparo exitoso correcto.");
 
 		fact.put("name", "other");//fail
 		TriggerResult result2 = engine.evaluate(RULE_NAME, fact, null);
 		assertNotNull(result2);
-		assertTrue(result2.isFired());
-		assertFalse(result2.isSuccess());
+		assertTrue(result2.isEvaluated());
+		assertFalse(result2.isTriggered());
+		log.debug("Trigger Result object {}",result2);
+		log.debug(">> disparo fallido correcto.");
+	}
+
+	@Test
+	public void testRuleFire2(){
+		log.debug(">> Probando disparo exitoso/fallido de regla.");
+		EngineControl controls = RuleEngine.newBuilder()
+				.withRules(CLEAN_RULE3)
+				.build();
+		RuleEvaluationControl engine = controls.getTriggerControl();
+		DefaultFact fact = new DefaultFact();
+		DefaultFact innerFact = new DefaultFact();
+
+		innerFact.put("name", RULE_3_VALUE);//success
+		fact.put("inner", innerFact);
+		TriggerResult result = engine.evaluate(RULE_NAME3, fact, null);
+		assertNotNull(result);
+		assertTrue(result.isEvaluated());
+		assertTrue(result.isTriggered());
+		log.debug("Trigger Result object {}",result);
+		log.debug(">> disparo exitoso correcto.");
+
+		fact.remove("inner");
+		fact.put("inner.name", "other");//fail
+		TriggerResult result2 = engine.evaluate(RULE_NAME3, fact, null);
+		assertNotNull(result2);
+		assertTrue(result2.isEvaluated());
+		assertFalse(result2.isTriggered());
 		log.debug("Trigger Result object {}",result2);
 		log.debug(">> disparo fallido correcto.");
 	}
@@ -167,8 +196,8 @@ public class RuleEngineTests {
 		log.debug(">> Probando success en \"{}\" v{}.",RULE_NAME,v);
 		TriggerResult result = engine.evaluate(RULE_NAME, v,fact, null);
 		assertNotNull(result);
-		assertTrue(result.isFired());
-		assertTrue(result.isSuccess());
+		assertTrue(result.isEvaluated());
+		assertTrue(result.isTriggered());
 		assertEquals(v, result.getRuleVersion().version());
 		log.debug(">> Passed");
 
@@ -177,8 +206,8 @@ public class RuleEngineTests {
 		log.debug(">> Probando fail en \"{}\" v{}.",RULE_NAME,v);
 		result = engine.evaluate(RULE_NAME, v,fact, null);
 		assertNotNull(result);
-		assertTrue(result.isFired());
-		assertFalse(result.isSuccess());
+		assertTrue(result.isEvaluated());
+		assertFalse(result.isTriggered());
 		assertEquals(v, result.getRuleVersion().version());
 		log.debug(">> Passed");
 
@@ -188,8 +217,8 @@ public class RuleEngineTests {
 		log.debug(">> Probando success en \"{}\" v{}.",RULE_NAME,v);
 		result = engine.evaluate(RULE_NAME, v,fact, null);
 		assertNotNull(result);
-		assertTrue(result.isFired());
-		assertTrue(result.isSuccess());
+		assertTrue(result.isEvaluated());
+		assertTrue(result.isTriggered());
 		assertEquals(v, result.getRuleVersion().version());
 		log.debug(">> Passed");
 
@@ -198,8 +227,8 @@ public class RuleEngineTests {
 		log.debug(">> Probando fail en \"{}\" v{}.",RULE_NAME,v);
 		result = engine.evaluate(RULE_NAME, v,fact, null);
 		assertNotNull(result);
-		assertTrue(result.isFired());
-		assertFalse(result.isSuccess());
+		assertTrue(result.isEvaluated());
+		assertFalse(result.isTriggered());
 		assertEquals(v, result.getRuleVersion().version());
 		log.debug(">> Passed");
 
@@ -208,8 +237,8 @@ public class RuleEngineTests {
 		log.debug(">> Probando success \"{}\" (latest).",RULE_NAME);
 		result = engine.evaluate(RULE_NAME, fact, null);//default version latest
 		assertNotNull(result);
-		assertTrue(result.isFired());
-		assertTrue(result.isSuccess());
+		assertTrue(result.isEvaluated());
+		assertTrue(result.isTriggered());
 		assertEquals(v, result.getRuleVersion().version());
 		log.debug(">> Passed");
 
@@ -218,8 +247,8 @@ public class RuleEngineTests {
 		log.debug(">> Probando fail \"{}\" (latest).",RULE_NAME);
 		result = engine.evaluate(RULE_NAME, fact, null);//default version latest
 		assertNotNull(result);
-		assertTrue(result.isFired());
-		assertFalse(result.isSuccess());
+		assertTrue(result.isEvaluated());
+		assertFalse(result.isTriggered());
 		assertEquals(v, result.getRuleVersion().version());
 		log.debug(">> Passed");
 	}
@@ -241,7 +270,7 @@ public class RuleEngineTests {
 		
 		for (int i = 0; i < fires; i++) {
 			TriggerResult result = control.evaluate(RULE_NAME, fact, null);
-			assertTrue(result.isFired() && result.isSuccess());
+			assertTrue(result.isEvaluated() && result.isTriggered());
 		}
 		
 		long finish = System.currentTimeMillis();
@@ -259,7 +288,7 @@ public class RuleEngineTests {
 		fires = 10000;
 		for (int i = 0; i < fires; i++) {
 			TriggerResult result = control.evaluate(RULE_NAME, fact, null);
-			assertTrue(result.isFired() && result.isSuccess());
+			assertTrue(result.isEvaluated() && result.isTriggered());
 		}
 		
 		finish = System.currentTimeMillis();
@@ -276,7 +305,7 @@ public class RuleEngineTests {
 		fires = 1000000;
 		for (int i = 0; i < fires; i++) {
 			TriggerResult result = control.evaluate(RULE_NAME, fact, null);
-			assertTrue(result.isFired() && result.isSuccess());
+			assertTrue(result.isEvaluated() && result.isTriggered());
 		}
 		
 		finish = System.currentTimeMillis();
