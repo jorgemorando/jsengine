@@ -22,21 +22,20 @@ Lightweight Java-based JavaScript Rules Engine that compiles and executes JS rul
 - Error mapping between JS exceptions and Java exceptions for clearer diagnostics.
 
 ## High-level architecture / runtime flow
-ASCII diagram (simplified):
 
-Client (app / REST) 
-    |
-    v
-Controls (RulesControl / RuleEvaluationControl / EngineControl)
-    |
-    v
-RuleRegistry  <---- stored metadata & versions
-    |
-    v
-EngineCore  (compiles & caches via GraalVM)
-    |
-    v
-Execution -> TriggerResult / MultiTriggerResult -> returned to caller
+```mermaid
+flowchart TB
+  Client[Client] --> Controls[Controls:<br/><i>EngineControl / RulesControl / RuleEvaluationControl</i>]
+  Controls --> RuleRegistry[RuleRegistry:<br/><i>Metadata & Versions</i>]
+  Controls --> EngineCore[EngineCore:<br/><i>Compile & Cache</i>]
+  RuleRegistry --> EngineCore
+  EngineCore --> Resources[Resources:<br/> <i>JS Resources & libraries</i>]
+  EngineCore --> Compiled[Cached Rule<br/><i>Rule Version</i>]
+  Compiled --> Graal[GraalVM JS Context]
+  Graal --> Execution[Execute Compiled Rule]
+  Execution --> Results[TriggerResult / MultiTriggerResult]
+  Results --> Client
+  ```
 
 ## Key components
 - EngineCore: compilation and execution layer using GraalVM.
