@@ -40,8 +40,6 @@ public class TestUtils {
 				)
 				.then("true")
 				.build();
-
-//        return new Rule(RULE_NAME,RULE_CLEAN_CODE, RuleType.DECISION);
 	}
 	private static Rule getCleanRule2(){
 		return Rule.createWithName(RULE_NAME2)
