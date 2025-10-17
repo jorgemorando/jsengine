@@ -23,22 +23,33 @@ The rule registration process is straight forward. Register rules when building 
 Let's start by having some simple helper factory methods that creat 2 rules. `foo_rule` and `bar_rule`
 ```java
    public static Rule rule1() {
-        String name = "foo_rule";
-        String script = "context." + name + " = fact.name == 'foo';"; 
-        return new Rule(name, script, RuleType.DECISION);
+    return Rule.createWithName("foo_rule")
+            .when(
+                    factField("name").isEqualTo("foo")
+            )
+            .then("true")
+            .build();
     }
 
     public static Rule rule2() {
-        String name = "bar_rule";
-        String script = "context." + name + " = fact.name == 'bar';";
-        return new Rule(name, script, RuleType.DECISION);
+        return Rule.createWithName("bar_rule")
+                .when(
+                        factField("name").isEqualTo("bar")
+                )
+                .then("true")
+                .build();
     }
 
-    /** Same rule name as cleanRule but with different condition (v2). */
+    /** Same rule name as rule1 but with different condition (therefore a new version v2). */
     public static Rule rule1v2() {
-        String name = "foo_rule";
-         String script = "context." + name + " = fact.name != undefined && fact.name == 'foo';"; 
-        return new Rule(name, script, RuleType.DECISION);
+        return Rule.createWithName("foo_rule")
+                .when(  
+                        factField("name").exists()
+                        .and(
+                        factField("name").isEqualTo("bar"))
+                )
+                .then("true")
+                .build();
     }
 ```
 You have to provide a structured code that will be executed within the JS engine with the rule logic. In our case, our logic checks a variable ***name*** of `fact` against the literal ***foo*** and ***bar*** respectively and assignes result to a variable of the same name as the rule within the `context`. 
@@ -72,8 +83,8 @@ DefaultFact fact = new DefaultFact();
 fact.put("name", "foo"); // will make the test rule1 succeed
 
 TriggerResult r = eval.evaluate(rule1().getName(), fact);//executes the latest version of the rule against the fact
-if (r.isFired()) {//true
-    boolean ok = r.isSuccess();//true
+if (r.isEvaluated()) {//true
+    boolean ok = r.isTriggered();//true
     // inspect payload and rule version if needed
     r.getRuleVersion().version() // 2
 }
