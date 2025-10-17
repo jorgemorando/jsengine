@@ -1,156 +1,136 @@
-# QUICKSTART
+# QUICKSTART — Developer tutorial
 
-This quickstart documents the common usage scenarios. Each scenario includes a short summary and a minimal example that follows the APIs exercised in the tests.
+A short, hands‑on tutorial that follows the scenarios exercised in the test-suite (src/test/java/.../RuleEngineTests.java). Each section is a small step you can copy & run while adapting the placeholders (CLEAN_RULE, RULE_NAME, etc.) to your own Rule/RuleVersion instances.
 
-Notes:
-- Replace test helpers (e.g. CLEAN_RULE, CLEAN_RULE2) with your Rule/RuleVersion instances when using in production.
-- All examples assume the project classes on the classpath (digital.amigo.jsengine.*).
+### Prerequisites
+- Project built and on your IDE classpath.
+- GraalVM JDK configured as JAVA_HOME for running tests / app.
+- Familiarity with the domain objects: Rule, RuleVersion, DefaultFact, DefaultRuleEngineContext.
 
----
+## Creating an engine instance (one-liner)
+You can use the RuleEngineBuilder to load the embedded JS helpers and operate it through the controls interfaces located in the `.control.*` package.
 
-## 1) Instantiate engine
-Summary: create an EngineControl instance using the builder. The engine will load embedded JS helpers from resources.
-
-Example:
 ```java
 EngineControl controls = RuleEngine.newBuilder().build();
+// quick check:
+assert controls != null;
 ```
-What to check: controls != null.
 
----
+## Registering rules at bootstrap (or later)
 
-## 2) Register rules (initial registration)
-Summary: register one or many rules at engine bootstrap. Tests use convenience builder `.withRules(...)` but you can also register later through RulesControl.
+The rule registration process is straight forward. Register rules when building the engine or via RulesControl after startup. 
 
-Example (bootstrap-time):
+Let's start by having some simple helper factory methods that creat 2 rules. `foo_rule` and `bar_rule`
+```java
+   public static Rule rule1() {
+        String name = "foo_rule";
+        String script = "context." + name + " = fact.name == 'foo';"; 
+        return new Rule(name, script, RuleType.DECISION);
+    }
+
+    public static Rule rule2() {
+        String name = "bar_rule";
+        String script = "context." + name + " = fact.name == 'bar';";
+        return new Rule(name, script, RuleType.DECISION);
+    }
+
+    /** Same rule name as cleanRule but with different condition (v2). */
+    public static Rule rule1v2() {
+        String name = "foo_rule";
+         String script = "context." + name + " = fact.name != undefined && fact.name == 'foo';"; 
+        return new Rule(name, script, RuleType.DECISION);
+    }
+```
+You have to provide a structured code that will be executed within the JS engine with the rule logic. In our case, our logic checks a variable ***name*** of `fact` against the literal ***foo*** and ***bar*** respectively and assignes result to a variable of the same name as the rule within the `context`. 
+`fact` and `context` are reserved words, the first accesses the structure of the object the rule has been evaluated for, the second holds contextual information for the current evaluation execution.
+
+Bootstrap-time registration (convenience):
 ```java
 EngineControl controls = RuleEngine.newBuilder()
-    .withRules(CLEAN_RULE) // CLEAN_RULE is a test helper; use your Rule instances
+    .withRules(rule1(), rule2()) // test helpers; replace with your Rule instances
     .build();
 
-RulesControl rulesControl = controls.getRulesControl();
-boolean registered = rulesControl.isRegistered(RULE_NAME);
+RulesControl rules = controls.getRulesControl();
+assert rules.isRegistered(rule1().getName());
 ```
-What to check: rule present in registry and list().size() matches expected.
 
----
-
-## 3) Shared RuleEngineContext across multiple rule evaluations
-Summary: evaluate multiple rules for a single fact while sharing a RuleEngineContext so JS can read/write shared data during a multi-rule trigger.
-
-Example:
+Registering after boot:
 ```java
-var triggerControl = RuleEngine.newBuilder()
-    .withRules(CLEAN_RULE, CLEAN_RULE2)
+RulesControl rules = RuleEngine.newBuilder().build().getRulesControl();
+rules.register(rule1());            // register foo_rule 
+rules.register(rule2());            // register bar_rule 
+rules.register(rule1v2());     // register different versions of foo_rule
+```
+
+## Evaluating a specific rule (success / failure)
+You can evaluate by rule name. This will check the fact against a single rule specified by the name. The object TriggerResult will report if fired and success.
+
+```java
+RuleEvaluationControl eval = controls.getTriggerControl();
+
+DefaultFact fact = new DefaultFact();
+fact.put("name", "foo"); // will make the test rule1 succeed
+
+TriggerResult r = eval.evaluate(rule1().getName(), fact);//executes the latest version of the rule against the fact
+if (r.isFired()) {//true
+    boolean ok = r.isSuccess();//true
+    // inspect payload and rule version if needed
+    r.getRuleVersion().version() // 2
+}
+```
+
+Notice the result contains `isFired()` method to check if the rule was actually triggered by the `fact`. It may be the conditions were not met and the rule was not fired at all.
+
+## Evaluating multiple rules and share execution context
+Summary: run many rules against the same fact and a shared RuleEngineContext so rules can read/write shared state.
+
+```java
+var trigger = RuleEngine.newBuilder()
+    .withRules(rule1(), rule2())
     .build()
     .getTriggerControl();
 
-DefaultFact fact = new DefaultFact();
-fact.put("name", RULE_1_VALUE);
-
 DefaultRuleEngineContext ctx = new DefaultRuleEngineContext();
-MultiTriggerResult results = triggerControl.evaluateRulesFor(fact, ctx);
-
-// Inspect returned context and aggregated results
-var sharedCtx = results.getContext();
-```
-What to check: results.getContext() is not null and contains entries for each evaluated rule.
-
----
-
-## 4) Single rule fire (success / failure)
-Summary: execute a single rule by name against a fact and optional context. TriggerResult indicates if the rule fired and if it succeeded.
-
-Example:
-```java
-EngineControl controls = RuleEngine.newBuilder().withRules(CLEAN_RULE).build();
-RuleEvaluationControl eval = controls.getTriggerControl();
-
+ctx.put("shared_var",1)//this variable will be accessible by all rules that fire. In fact, conditions of rules can use context variables to check if they are suitable to fire.
 DefaultFact fact = new DefaultFact();
-fact.put("name", "decision"); // value that makes rule succeed in tests
+fact.put("name", "foo");
 
-TriggerResult r1 = eval.evaluate(RULE_NAME, fact, null);
-boolean fired = r1.isFired();
-boolean success = r1.isSuccess();
 
-// failing case:
-fact.put("name", "other");
-TriggerResult r2 = eval.evaluate(RULE_NAME, fact, null);
+MultiTriggerResult results = trigger.evaluateRulesFor(fact, ctx);
+
+// examine results and shared context
+var successful = results.getSuccessful(); //1 - foo_rule
+var failed     = results.getFailed(); //1 - bar_rule
+var sharedCtx  = results.getContext();//3 shared_var,foo_rule, bar_rule
+
+results.getContext().forEach((k,v) -> System.out.println(k + " -> " + v));
 ```
-What to check: r.isFired(), r.isSuccess() as expected.
 
----
+Tip: MultiTriggerResult contains ordered successful/failed TriggerResult lists and the context map modified by each rule.
 
-## 5) Multiple rules fire and inspect successes / failures
-Summary: evaluate several registered rules for the same fact/context and inspect MultiTriggerResult for successful and failed rule results.
+## Versioning — register & evaluate specific versions
+The rule registry supports named/versioned rules. You can register multiple versions and request a specific version when evaluating.
 
-Example:
-```java
-EngineControl controls = RuleEngine.newBuilder().withRules(CLEAN_RULE, CLEAN_RULE2).build();
-RuleEvaluationControl eval = controls.getTriggerControl();
-
-DefaultFact fact = new DefaultFact();
-fact.put("name", "decision"); // triggers success on CLEAN_RULE, fail on CLEAN_RULE2
-
-MultiTriggerResult multi = eval.evaluateRulesFor(fact, new DefaultRuleEngineContext());
-
-var successful = multi.getSuccessful(); // ordered collection of successful TriggerResults
-var failed = multi.getFailed();         // ordered collection of failed TriggerResults
-```
-What to check: multi.getResultCount() equals number of evaluated rules; sizes of successful/failed match expected.
-
----
-
-## 6) Rule versioning and selecting versions
-Summary: the registry supports versioned rules. Register multiple versions and evaluate by explicit version or default-to-latest behaviour.
-
-Registering versions:
+Register versions:
 ```java
 RulesControl rules = RuleEngine.newBuilder().build().getRulesControl();
-rules.register(CLEAN_RULE);     // v1 in tests
-rules.register(CLEAN_RULE_v2);  // v2 in tests
+rules.register(rule1());         // v1 foo_rule
+rules.register(rule1v2());      // v2 foo_rule
 ```
 
-Evaluate a specific version:
+Evaluate a specific version (inferred API):
 ```java
-// evaluate rule by name + explicit integer version
-TriggerResult r = eval.evaluate(RULE_NAME, 1, fact, null); // evaluate v1
-TriggerResult r2 = eval.evaluate(RULE_NAME, 2, fact, null); // evaluate v2
-
-// evaluate using default latest
-TriggerResult latest = eval.evaluate(RULE_NAME, fact, null); // uses latest registered version
+// evaluate by name + version number (method signatures used in tests)
+var RULE_NAME = rule1().getName();
+TriggerResult v1 = eval.evaluate(RULE_NAME, 1, fact, null); // use version 1
+TriggerResult latest = eval.evaluate(RULE_NAME, fact, null); // use latest registered
 int usedVersion = latest.getRuleVersion().version();
 ```
-What to check: result.getRuleVersion().version() matches the requested version (or latest when omitted).
+NOTICE: The last parameter of evaluate is the context, we're not passing any context to the trigger.
 
----
+8) Spring integration (autowiring controls)
+Summary: the engine exposes control beans suitable for autowiring when running as a Spring Boot application.
 
-## 7) Performance / speed testing
-Summary: tests include simple loops that repeatedly evaluate a compiled rule to measure throughput. The evaluation API is used in tight loops to measure "fires per second".
-
-Example pattern:
-```java
-RuleEvaluationControl eval = RuleEngine.newBuilder().withRules(CLEAN_RULE).build().getTriggerControl();
-DefaultFact fact = new DefaultFact();
-fact.put("name", "decision");
-
-int iterations = 10_000;
-long start = System.currentTimeMillis();
-for (int i = 0; i < iterations; i++) {
-    TriggerResult r = eval.evaluate(RULE_NAME, fact, null);
-    assert r.isFired() && r.isSuccess();
-}
-long elapsed = System.currentTimeMillis() - start;
-double fps = iterations / (elapsed / 1000.0);
-```
-What to check: throughput meets your expectations; tests assert thresholds (e.g. >1000, >2000, >6000 fps in test-suite environment).
-
----
-
-## 8) Spring integration (controls are Spring beans)
-Summary: when running as a Spring Boot app, the control components (RulesControl, RuleEvaluationControl, EngineControl) can be autowired into services or controllers.
-
-Example usage:
 ```java
 @Service
 public class RuleService {
@@ -160,14 +140,14 @@ public class RuleService {
     @Autowired
     private RuleEvaluationControl evaluationControl;
 
-    public void registerRule(Rule r) { rulesControl.register(r); }
-    public TriggerResult evaluate(String name, DefaultFact fact) {
-        return evaluationControl.evaluate(name, fact, null);
+    public void register(Rule r) { rulesControl.register(r); }
+    public TriggerResult evaluate(String name, DefaultFact f) {
+        return evaluationControl.evaluate(name, f, null);
     }
 }
 ```
-What to check: use the actual bean names / method signatures in control classes (see src/main/java/digital/amigo/jsengine/control).
 
----
+> Practical tips
+> - Use DefaultRuleEngineContext when rules must share state across multiple evaluations.
+> - Keep rule scripts small and deterministic for best performance under GraalVM.
 
-If you want, a runnable example can be prepared that constructs Rule and RuleVersion instances (replacing CLEAN_RULE/CLEAN_RULE2) and demonstrates register + evaluate end-to-end matching the exact method signatures in this codebase.
