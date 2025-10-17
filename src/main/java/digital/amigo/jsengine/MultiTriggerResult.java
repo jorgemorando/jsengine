@@ -29,11 +29,11 @@ public final class MultiTriggerResult {
     }
 
     public List<TriggerResult> getSuccessful(){
-        return results.stream().filter(TriggerResult::isSuccess).toList();
+        return results.stream().filter(TriggerResult::isTriggered).toList();
     }
 
     public List<TriggerResult> getFailed(){
-        return results.stream().filter(r -> !r.isSuccess()).toList();
+        return results.stream().filter(r -> !r.isTriggered()).toList();
     }
 
 

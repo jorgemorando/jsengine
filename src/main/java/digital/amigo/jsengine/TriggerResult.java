@@ -13,10 +13,11 @@ import java.util.List;
 @Data
 public class TriggerResult {
 
-	private boolean success = false;
-	
-	private boolean fired = false;
-	
+
+	private boolean triggered = false;
+
+	private boolean evaluated = false;
+
 	private RuleVersion ruleVersion;
 
 	private Fact fact;
@@ -31,8 +32,8 @@ public class TriggerResult {
 	@Override
 	public String toString() {
 		return new ToStringBuilder(this,ToStringStyle.JSON_STYLE)
-				.append("success", success)
-				.append("fired", fired)
+				.append("triggered", triggered)
+				.append("evaluated", evaluated)
 				.append("rule", ruleVersion)
 				.append("fact", fact)
 				.append("context", ruleEngineContext)

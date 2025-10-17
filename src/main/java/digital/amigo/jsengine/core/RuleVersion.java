@@ -1,5 +1,6 @@
 package digital.amigo.jsengine.core;
 
+import digital.amigo.jsengine.rule.Rule;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -12,11 +13,15 @@ public record RuleVersion(Rule rule, int version) {
     }
 
     public String versionName(){
-        return rule().getName() + "_v" + version;
+        return name() + "_v" + version;
+    }
+
+    public String humanReadableName(){
+        return rule.getName();
     }
 
     public String name(){
-        return rule().getName();
+        return rule().getName().replaceAll("\\s+", "_");
     }
 
     @Override

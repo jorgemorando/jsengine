@@ -3,6 +3,7 @@
  */
 package digital.amigo.jsengine.core;
 
+import digital.amigo.jsengine.rule.Rule;
 import lombok.Getter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
