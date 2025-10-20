@@ -1,9 +1,9 @@
 package digital.amigo.jsengine.rule;
 
-public class GreaterOrEquals extends FieldCondition {
+public class IsGreaterOrEquals extends FieldCondition {
     private final Number value;
 
-    public GreaterOrEquals(String field, Number value, RefType refType) {
+    IsGreaterOrEquals(String field, Number value, RefType refType) {
         super(field,refType);
         this.value = value;
     }

@@ -96,23 +96,23 @@ public class RuleEngineTests {
 		RuleEvaluationControl engine = controls.getTriggerControl();
 		DefaultFact fact = new DefaultFact();
 		DefaultFact innerFact = new DefaultFact();
-
 		innerFact.put("name", RULE_3_VALUE);//success
+
 		fact.put("inner", innerFact);
 		TriggerResult result = engine.evaluate(RULE_NAME3, fact, null);
+		log.debug("Trigger Result object {}",result);
 		assertNotNull(result);
 		assertTrue(result.isEvaluated());
 		assertTrue(result.isTriggered());
-		log.debug("Trigger Result object {}",result);
 		log.debug(">> disparo exitoso correcto.");
 
 		fact.remove("inner");
 		fact.put("inner.name", "other");//fail
 		TriggerResult result2 = engine.evaluate(RULE_NAME3, fact, null);
+		log.debug("Trigger Result object {}",result2);
 		assertNotNull(result2);
 		assertTrue(result2.isEvaluated());
 		assertFalse(result2.isTriggered());
-		log.debug("Trigger Result object {}",result2);
 		log.debug(">> disparo fallido correcto.");
 	}
 
@@ -130,8 +130,8 @@ public class RuleEngineTests {
 		MultiTriggerResult results = engine.evaluateRulesFor(fact,ctx);
 		assertNotNull(results);
         assertEquals("Should evaluate 2 rules instead of " + results.getResultCount(), 2, results.getResultCount());
-		var successful = results.getSuccessful();
-		var failed = results.getFailed();
+		var successful = results.getTriggered();
+		var failed = results.getNotTriggered();
 		assertTrue("Should have 1 success and 1 failure",successful.size()==1 && failed.size()==1);
         assertEquals("Rule1 should be successful", CLEAN_RULE.getName(), successful.getFirst().getRuleVersion().name());
         assertEquals("Rule2 should be failure", CLEAN_RULE2.getName(), failed.getFirst().getRuleVersion().name());
@@ -146,8 +146,8 @@ public class RuleEngineTests {
 		assertNotNull(results2);
 		assertEquals("Should evaluate 2 rules instead of " + results2.getResultCount(), 2, results.getResultCount());
 
-		successful = results2.getSuccessful();
-		failed = results2.getFailed();
+		successful = results2.getTriggered();
+		failed = results2.getNotTriggered();
 
 		assertTrue("Should have 1 success and 1 failure",successful.size()==1 && failed.size()==1);
 		assertEquals("Rule2 should be successful", CLEAN_RULE2.getName(), successful.getFirst().getRuleVersion().name());

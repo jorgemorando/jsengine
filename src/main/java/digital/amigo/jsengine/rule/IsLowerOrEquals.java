@@ -1,16 +1,16 @@
 package digital.amigo.jsengine.rule;
 
-public class FieldIsOfValue extends FieldCondition {
-    private final Object value;
+public class IsLowerOrEquals extends FieldCondition {
+    private final Number value;
 
-    public FieldIsOfValue(String field, Object value, RefType refType) {
+    IsLowerOrEquals(String field, Number value, RefType refType) {
         super(field,refType);
         this.value = value;
     }
 
     @Override
     public String toJavaScript() {
-        return ref() + " == \"" + value + "\"";
+        return ref() + " <= " + value;
     }
 
     @Override

@@ -1,7 +1,7 @@
 package digital.amigo.jsengine.rule;
 
-public class FieldExists extends FieldCondition {
-    public FieldExists(String field, FieldCondition.RefType type) {
+public class IsNotNull extends FieldCondition {
+    IsNotNull(String field, FieldCondition.RefType type) {
         super(field,type);
     }
 

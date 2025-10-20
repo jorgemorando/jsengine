@@ -34,7 +34,7 @@ public class TriggerResult {
 		return new ToStringBuilder(this,ToStringStyle.JSON_STYLE)
 				.append("triggered", triggered)
 				.append("evaluated", evaluated)
-				.append("rule", ruleVersion)
+				.append("ruleVersion", ruleVersion)
 				.append("fact", fact)
 				.append("context", ruleEngineContext)
 				.append("message", messages)

@@ -9,7 +9,7 @@ public abstract class FieldCondition implements Condition {
         this.refType = type;
     }
 
-    String ref(){
+    protected String ref(){
         return switch (refType){
             case FACT -> factRef();
             case CONTEXT -> contextRef();
@@ -20,7 +20,7 @@ public abstract class FieldCondition implements Condition {
         return "fact." + field;
     }
 
-     private String contextRef() {
+    private String contextRef() {
         return "context." + field;
     }
 

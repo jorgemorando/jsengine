@@ -23,5 +23,16 @@ public class JSONUtils {
 	public static XmlMapper getXmlMapper(){
 		return xmlMapper;
 	}
+
+	public static String toJsValue(Object value) {
+		if (value == null) return "null";
+		String s = String.valueOf(value);
+		if (value instanceof Number || value instanceof Boolean) {
+			return s;
+		}
+		// treat as string: escape backslashes and double quotes
+		s = s.replace("\\", "\\\\").replace("\"", "\\\"");
+		return "\"" + s + "\"";
+	}
 	
 }

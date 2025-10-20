@@ -28,15 +28,13 @@ public final class MultiTriggerResult {
         return results.size();
     }
 
-    public List<TriggerResult> getSuccessful(){
+    public List<TriggerResult> getTriggered(){
         return results.stream().filter(TriggerResult::isTriggered).toList();
     }
 
-    public List<TriggerResult> getFailed(){
+    public List<TriggerResult> getNotTriggered(){
         return results.stream().filter(r -> !r.isTriggered()).toList();
     }
-
-
 
     /* (non-Javadoc)
      * @see java.lang.Object#toString()

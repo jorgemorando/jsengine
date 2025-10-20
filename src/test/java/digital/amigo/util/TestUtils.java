@@ -61,9 +61,9 @@ public class TestUtils {
 	private static Rule getCleanRule3(){
 		return Rule.createWithName(RULE_NAME3)
 				.when(
-						factField("inner").exists()
+						factField("inner").isNotNull()
 					.and(
-						factField("inner.name").exists()
+						factField("inner.name").isNotNull()
 					).and(
 						factField("inner.name").isEqualTo(RULE_3_VALUE)
 					)

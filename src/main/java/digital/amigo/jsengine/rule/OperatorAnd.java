@@ -1,10 +1,10 @@
 package digital.amigo.jsengine.rule;
 
-public class AndOperator implements Condition {
+public class OperatorAnd implements Condition {
     private final Condition left;
     private final Condition right;
 
-    public AndOperator(Condition left, Condition right) {
+    OperatorAnd(Condition left, Condition right) {
         this.left = left;
         this.right = right;
     }

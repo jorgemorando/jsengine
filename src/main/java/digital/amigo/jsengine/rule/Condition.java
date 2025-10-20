@@ -8,13 +8,13 @@ public interface Condition {
      * Fluent AND chaining helper.
      */
     default Condition and(Condition other) {
-        return new AndOperator(this, other);
+        return new OperatorAnd(this, other);
     }
 
     /**
      * Fluent OR chaining helper.
      */
     default Condition or(Condition other) {
-        return new OrOperator(this, other);
+        return new OperatorOr(this, other);
     }
 }

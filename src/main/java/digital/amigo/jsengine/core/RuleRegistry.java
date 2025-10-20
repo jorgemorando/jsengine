@@ -101,7 +101,7 @@ import static digital.amigo.jsengine.utils.Assertions.assertTrue;
         versionedRuleName = ruleVersion.versionName();
         log.debug(versionedRuleName);
 
-        code = render(ruleVersion);
+        code = compileToJs(ruleVersion);
         log.debug(code);
         engine.loadScript(versionedRuleName, code);
 
@@ -206,13 +206,15 @@ import static digital.amigo.jsengine.utils.Assertions.assertTrue;
     }
 
     /*----------------------------- PRIVATE -------------------------------*/
-    public String render(RuleVersion rule) {
+    public String compileToJs(RuleVersion rule) {
         var factName = engine.getOptions().factName();
         var contextName = engine.getOptions().contextName();
         Condition condition = rule.rule().getCondition();
         var ruleName = rule.rule().getName();
         var memberName = rule.versionName();
         var result =  rule.rule().getResult();
+
+        //
         return String.format("""
             function %1$s(%3$s, %4$s) {
                 if (%5$s) {

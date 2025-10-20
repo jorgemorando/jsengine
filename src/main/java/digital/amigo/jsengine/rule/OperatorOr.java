@@ -1,10 +1,10 @@
 package digital.amigo.jsengine.rule;
 
-public class OrOperator implements Condition {
+public class OperatorOr implements Condition {
     private final Condition left;
     private final Condition right;
 
-    public OrOperator(Condition left, Condition right) {
+    OperatorOr(Condition left, Condition right) {
         this.left = left;
         this.right = right;
     }

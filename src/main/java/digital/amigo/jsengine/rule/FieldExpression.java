@@ -18,18 +18,30 @@ public class FieldExpression {
     }
 
     public Condition isEqualTo(Object value) {
-        return new FieldIsOfValue(field, value, refType);
+        return new IsEqualTo(field, value, refType);
     }
 
-    public Condition greaterOrEqual(Number value) {
-        return new GreaterOrEquals(field, value, refType);
+    public Condition isGreaterOrEqualThan(Number value) {
+        return new IsGreaterOrEquals(field, value, refType);
     }
 
-    public Condition lowerOrEqual(Number value) {
-        return new LowerOrEquals(field, value, refType);
+    public Condition isLowerOrEqualThan(Number value) {
+        return new IsLowerOrEquals(field, value, refType);
     }
 
-    public Condition exists() {
-        return new FieldExists(field, refType);
+    public Condition isGreaterThan(Number value) {
+        return new IsGreater(field, value, refType);
+    }
+
+    public Condition isLowerThan(Number value) {
+        return new IsLower(field, value, refType);
+    }
+
+    public Condition isNotNull() {
+        return new IsNotNull(field, refType);
+    }
+
+    public Condition isNull() {
+        return new IsNull(field, refType);
     }
 }
