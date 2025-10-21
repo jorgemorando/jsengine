@@ -3,7 +3,7 @@ package digital.amigo.jsengine.execution;
 import digital.amigo.jsengine.DefaultFact;
 import digital.amigo.jsengine.DefaultRuleEngineContext;
 import digital.amigo.jsengine.TriggerResult;
-import digital.amigo.jsengine.control.RuleEvaluationControl;
+import digital.amigo.jsengine.control.EngineControl;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -18,44 +18,39 @@ import java.util.concurrent.*;
  */
 public class DefaultPlanExecutor implements PlanExecutor {
 
-    private final RuleEvaluationControl eval;
+    private final EngineControl engineControl;
     private final ExecutorService executor;
     private final boolean ownedExecutor;
 
-    public DefaultPlanExecutor(RuleEvaluationControl eval, ExecutorService executor, boolean ownedExecutor) {
-        this.eval = Objects.requireNonNull(eval, "eval");
+    public DefaultPlanExecutor(EngineControl engineControl, ExecutorService executor, boolean ownedExecutor) {
+        this.engineControl = Objects.requireNonNull(engineControl, "EngineControl should not be null");
         this.executor = Objects.requireNonNull(executor, "executor");
         this.ownedExecutor = ownedExecutor;
     }
 
-    public DefaultPlanExecutor(RuleEvaluationControl eval) {
-        this(eval, Executors.newCachedThreadPool(), true);
+    public DefaultPlanExecutor(EngineControl control) {
+
+        this(control, Executors.newCachedThreadPool(), true);
     }
 
     @Override
     public List<StepResult> execute(Plan plan, DefaultFact fact, DefaultRuleEngineContext context) throws InterruptedException {
         List<StepResult> results = new ArrayList<>(plan.steps().size());
         for (Step step : plan.steps()) {
-            if (step.type() == StepType.SEQUENTIAL) {
+            if (step.type() == Step.Type.SEQUENTIAL) {
                 // Expect exactly one rule name
                 String ruleName = step.ruleNames().get(0);
                 try {
-                    TriggerResult tr = eval.evaluate(ruleName, fact, context);
-                    results.add(new StepResult.SequentialStepResult(step.id(), tr, null));
+                    TriggerResult tr = engineControl.getTriggerControl().evaluate(ruleName, fact, context);
+                    results.add(new StepResult.Sequential(step.id(), tr, null));
                 } catch (Throwable t) {
-                    results.add(new StepResult.SequentialStepResult(step.id(), null, t));
+                    results.add(new StepResult.Sequential(step.id(), null, t));
                 }
             } else {
                 // PARALLEL: submit one task per ruleName and wait for all to complete
                 Map<String, Future<TriggerResult>> futures = new LinkedHashMap<>();
                 for (String rn : step.ruleNames()) {
-                    futures.put(rn, executor.submit(() -> {
-                        try {
-                            return eval.evaluate(rn, fact, context);
-                        } catch (Throwable t) {
-                            throw t;
-                        }
-                    }));
+                    futures.put(rn, executor.submit(() -> engineControl.getTriggerControl().evaluate(rn, fact, context)));
                 }
 
                 Map<String, TriggerResult> collected = new LinkedHashMap<>();
@@ -72,7 +67,7 @@ public class DefaultPlanExecutor implements PlanExecutor {
                         errors.put(rn, ce);
                     }
                 }
-                results.add(new StepResult.ParallelStepResult(step.id(), collected, errors));
+                results.add(new StepResult.Parallel(step.id(), collected, errors));
             }
         }
         return results;

@@ -16,27 +16,37 @@ import java.util.Objects;
 public final class Step {
 
     private final String id;
-    private final StepType type;
+    private final Type type;
     private final List<String> ruleNames;
 
-    private Step(String id, StepType type, List<String> ruleNames) {
+    private Step(String id, Type type, List<String> ruleNames) {
         this.id = Objects.requireNonNull(id, "id");
         this.type = Objects.requireNonNull(type, "type");
         this.ruleNames = ruleNames == null ? List.of() : List.copyOf(ruleNames);
     }
 
     public String id() { return id; }
-    public StepType type() { return type; }
+    public Type type() { return type; }
     public List<String> ruleNames() { return ruleNames; }
 
     public static Step sequential(String id, String ruleName) {
         Objects.requireNonNull(ruleName, "ruleName");
-        return new Step(id, StepType.SEQUENTIAL, List.of(ruleName));
+        return new Step(id, Type.SEQUENTIAL, List.of(ruleName));
     }
 
     public static Step parallel(String id, List<String> ruleNames) {
         Objects.requireNonNull(ruleNames, "ruleNames");
         if (ruleNames.isEmpty()) throw new IllegalArgumentException("parallel step requires >= 1 rule");
-        return new Step(id, StepType.PARALLEL, Collections.unmodifiableList(new ArrayList<>(ruleNames)));
+        return new Step(id, Type.PARALLEL, List.copyOf(ruleNames));
     }
+
+    /**
+     * Step execution mode.
+     */
+    public enum Type {
+        SEQUENTIAL, // a single rule is executed for this step
+        PARALLEL    // multiple rules are executed in parallel for this step
+    }
+
 }
+

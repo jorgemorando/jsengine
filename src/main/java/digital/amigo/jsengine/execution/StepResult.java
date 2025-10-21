@@ -1,6 +1,8 @@
 package digital.amigo.jsengine.execution;
 
 import digital.amigo.jsengine.TriggerResult;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.util.Collections;
 import java.util.Map;
@@ -26,11 +28,11 @@ public abstract class StepResult {
 
     public abstract boolean success();
 
-    public static final class SequentialStepResult extends StepResult {
+    public static final class Sequential extends StepResult {
         private final TriggerResult result;
         private final Throwable error;
 
-        public SequentialStepResult(String stepId, TriggerResult result, Throwable error) {
+        public Sequential(String stepId, TriggerResult result, Throwable error) {
             super(stepId);
             this.result = result;
             this.error = error;
@@ -46,15 +48,21 @@ public abstract class StepResult {
 
         @Override
         public String toString() {
-            return "SequentialStepResult{" + "stepId=" + stepId() + ", success=" + success() + ", result=" + result + ", error=" + error + '}';
+            return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
+                    .append("stepId",stepId())
+                    .append("type",this.getClass().getName())
+                    .append("success",success())
+                    .append("stepResult",result)
+                    .append("error",error)
+                    .build();
         }
     }
 
-    public static final class ParallelStepResult extends StepResult {
+    public static final class Parallel extends StepResult {
         private final Map<String, TriggerResult> results;
         private final Map<String, Throwable> errors;
 
-        public ParallelStepResult(String stepId, Map<String, TriggerResult> results, Map<String, Throwable> errors) {
+        public Parallel(String stepId, Map<String, TriggerResult> results, Map<String, Throwable> errors) {
             super(stepId);
             this.results = results == null ? Collections.emptyMap() : Collections.unmodifiableMap(results);
             this.errors = errors == null ? Collections.emptyMap() : Collections.unmodifiableMap(errors);
@@ -72,7 +80,13 @@ public abstract class StepResult {
 
         @Override
         public String toString() {
-            return "ParallelStepResult{" + "stepId=" + stepId() + ", success=" + success() + ", results=" + results.keySet() + ", errors=" + errors.keySet() + '}';
+            return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
+                    .append("stepId",stepId())
+                    .append("type",this.getClass().getName())
+                    .append("success",success())
+                    .append("results",results.keySet() )
+                    .append("errors",errors.keySet())
+                    .build();
         }
     }
 }

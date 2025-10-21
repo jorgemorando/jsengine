@@ -28,7 +28,7 @@ public record RuleVersion(Rule rule, int version) {
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.JSON_STYLE)
                 .append("rule", rule)
-                .append("versioned", version)
+                .append("version", version)
                 .build();
     }
 

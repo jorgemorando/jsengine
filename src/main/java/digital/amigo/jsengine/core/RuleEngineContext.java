@@ -12,13 +12,14 @@ import java.io.Serial;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Interfaz base para objetos que ser&aacute;n utilizados de contexto paranalizados contra reglas.
  * @author jorge.morando
  *
  */
-public abstract class RuleEngineContext extends HashMap<String,Object> implements ProxyObject {
+public abstract class RuleEngineContext extends ConcurrentHashMap<String,Object> implements ProxyObject {
 		
 	/**
 	 * 
@@ -34,12 +35,6 @@ public abstract class RuleEngineContext extends HashMap<String,Object> implement
 	
 	public static RuleEngineContext empty(){
 		return new DefaultRuleEngineContext();
-	}
-	
-	public static RuleEngineContext clone(RuleEngineContext ruleEngineContext){
-		RuleEngineContext ctx = empty();
-		ctx.putAll(ruleEngineContext);
-		return ctx;
 	}
 	
 	public static RuleEngineContext fromMap(Map<String,Object> map){

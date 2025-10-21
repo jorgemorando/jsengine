@@ -21,7 +21,7 @@ import static digital.amigo.jsengine.utils.Assertions.assertTrue;
  * @author jorge.morando
  *
  */
-final class RuleEngine implements EngineControl, RulesControl, RuleEvaluationControl {
+public final class RuleEngine implements EngineControl, RulesControl, RuleEvaluationControl {
 
 	private final Logger log = LoggerFactory.getLogger(RuleEngine.class);
 	

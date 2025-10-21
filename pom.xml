@@ -18,7 +18,7 @@
     </parent>
 
     <properties>
-        <java.version>22</java.version>
+        <java.version>25</java.version>
     </properties>
 
     <dependencies>

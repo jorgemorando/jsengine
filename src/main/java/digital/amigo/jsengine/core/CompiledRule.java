@@ -21,7 +21,7 @@ public final class CompiledRule {
 
     public Boolean execute(Fact fact, RuleEngineContext ctx) {
         //FIXME: Need to implement decisions correctly
-        //TODO: Nice to have rules read values (providers) and rules alter the rules execution context (providers)
+        //TODO: Nice to have rules read values (consumers) and rules alter the rules execution context (providers)
         return compiledRule.execute(fact, ctx).asBoolean();
     }
 }
